@@ -1,5 +1,3 @@
-package inf1010.oblig3;
-
 import java.io.IOException;
 import java.io.Writer;
 

@@ -1,5 +1,3 @@
-package inf1010.oblig3;
-
 /**
  * Wraps the board solving process in an object that is suitable for running in
  * a separate thread context.

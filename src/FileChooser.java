@@ -1,5 +1,3 @@
-package inf1010.oblig3;
-
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.io.File;

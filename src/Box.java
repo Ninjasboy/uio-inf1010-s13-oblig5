@@ -1,5 +1,3 @@
-package inf1010.oblig3;
-
 /**
  * The box that is a sub-segment of a Sudoku board.
  * 

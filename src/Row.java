@@ -1,5 +1,3 @@
-package inf1010.oblig3;
-
 /**
  * Models a single row of squares on a Sudoku board.
  * 

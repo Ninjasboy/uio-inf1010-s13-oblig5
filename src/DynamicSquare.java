@@ -1,5 +1,3 @@
-package inf1010.oblig3;
-
 /**
  * Model of a user-fillable (solvable, dynamic) square element of a Sudoku
  * board.

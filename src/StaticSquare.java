@@ -1,5 +1,3 @@
-package inf1010.oblig3;
-
 /**
  * Models a square that is given by the puzzle author, i.e. a square that is not
  * to be modified by the puzzle solver.

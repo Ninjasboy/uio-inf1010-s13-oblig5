@@ -1,5 +1,3 @@
-package inf1010.oblig3;
-
 /**
  * Fra oppgaveteksten: "rute er den minste enheten og er navnet vi bruker om de
  * minste enhetene på brettet; feltet som det kan stå ett tall (eller en

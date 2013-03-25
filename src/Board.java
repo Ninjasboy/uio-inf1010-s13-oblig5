@@ -1,5 +1,3 @@
-package inf1010.oblig3;
-
 /**
  * Model of a Sudoku board.
  * 

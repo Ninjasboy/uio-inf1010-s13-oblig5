@@ -1,5 +1,3 @@
-package inf1010.oblig3;
-
 /**
  * This class represents a rectangular fragment of a Sudoku board, be it an
  * entire row, column, or a box.
