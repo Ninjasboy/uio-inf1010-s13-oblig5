@@ -5,9 +5,11 @@
  * @author amn
  * 
  */
-class DynamicSquare extends Square {
+class DynamicSquare extends Square
+{
 
-	DynamicSquare(int colIndex, int rowIndex, Board board) {
+	DynamicSquare(int colIndex, int rowIndex, Board board)
+	{
 		super(colIndex, rowIndex, board);
 	}
 
@@ -19,16 +21,16 @@ class DynamicSquare extends Square {
 	 *             specific method of solving a Sudoku board takes care of the
 	 *             solving entirely.
 	 * 
-	 * @param tryValue
-	 *            Value to try for this square
-	 * @param eventListener
-	 *            an object whose methods are called in response to changing the
-	 *            board data.
+	 * @param tryValue Value to try for this square
+	 * @param eventListener an object whose methods are called in response to
+	 *        changing the board data.
 	 */
-	void setNumberMeAndTheRest() {
+	void setNumberMeAndTheRest()
+	{
 		int tryValue;
 
-		for(tryValue = value + 1; tryValue <= board.dimension(); tryValue++) {
+		for(tryValue = value + 1; tryValue <= board.dimension(); tryValue++)
+		{
 
 			/*
 			 * System.err.println("Trying value " + tryValue +
@@ -36,7 +38,8 @@ class DynamicSquare extends Square {
 			 */
 
 			if(row().isValidValue(tryValue) && col().isValidValue(tryValue)
-					&& box().isValidValue(tryValue)) {
+					&& box().isValidValue(tryValue))
+			{
 
 				/*
 				 * System.err.println(colIndex + ":" + rowIndex + " " + tryValue
@@ -47,17 +50,22 @@ class DynamicSquare extends Square {
 
 				DynamicSquare nextDynamicSquare = board.nextDynamicSquare(this);
 
-				if(nextDynamicSquare == null) {
+				if(nextDynamicSquare == null)
+				{
 					/**
 					 * This and all previous square have gotten a valid value
 					 * each. There are no more squares, so we have a solution on
 					 * our hands.
 					 */
 					board.eventListener.onBoardSolutionComplete(board);
-				} else {
+				}
+				else
+				{
 					nextDynamicSquare.setNumberMeAndTheRest();
 				}
-			} else {
+			}
+			else
+			{
 
 				/*
 				 * System.err.println(colIndex + ":" + rowIndex + " " + tryValue
@@ -85,15 +93,18 @@ class DynamicSquare extends Square {
 		// board.prevDynamicSquare(this).setNumberMeAndTheRest();
 	}
 
-	final Row row() {
+	final Row row()
+	{
 		return board.row(rowIndex);
 	}
 
-	final Column col() {
+	final Column col()
+	{
 		return board.col(colIndex);
 	}
 
-	final Box box() {
+	final Box box()
+	{
 		return board.box(colIndex, rowIndex);
 	}
 
@@ -102,10 +113,10 @@ class DynamicSquare extends Square {
 	 * 
 	 * Will notify the object that is set as event listener for the board.
 	 * 
-	 * @param newValue
-	 *            New value of this square to set to.
+	 * @param newValue New value of this square to set to.
 	 */
-	void reset(int newValue) {
+	void reset(int newValue)
+	{
 		this.value = newValue;
 		board.eventListener.onResetBoardSquareValue(this);
 	}

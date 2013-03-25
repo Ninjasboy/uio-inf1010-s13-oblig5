@@ -12,13 +12,20 @@ import java.io.IOException;
  * @author armenmi
  * 
  */
-class BoardFileLoader {
-	static int valueFromChar(char c) {
-		if(c >= '1' && c <= '9') {
+class BoardFileLoader
+{
+	static int valueFromChar(char c)
+	{
+		if(c >= '1' && c <= '9')
+		{
 			return c - '0';
-		} else if(c >= 'A' && c <= 'Z') {
+		}
+		else if(c >= 'A' && c <= 'Z')
+		{
 			return c - '@';
-		} else if(c == '@') {
+		}
+		else if(c == '@')
+		{
 			return 36;
 		}
 
@@ -28,15 +35,13 @@ class BoardFileLoader {
 	/**
 	 * Loads a board from a file.
 	 * 
-	 * @param file
-	 *            File with the board data
+	 * @param file File with the board data
 	 * @return A Board object with loaded values.
-	 * @throws IOException
-	 *             If an error occurs during doing file I/O
-	 * @throws Exception
-	 *             If file data is in an invalid format during loading.
+	 * @throws IOException If an error occurs during doing file I/O
+	 * @throws Exception If file data is in an invalid format during loading.
 	 */
-	Board boardFromFile(File file) throws IOException, Exception {
+	Board boardFromFile(File file) throws IOException, Exception
+	{
 
 		BufferedReader reader = null;
 
@@ -52,31 +57,39 @@ class BoardFileLoader {
 
 		int[][] boardData = new int[dimension][dimension];
 
-		for(int y = 0; y < dimension; y++) {
+		for(int y = 0; y < dimension; y++)
+		{
 			String line = null;
 
 			line = reader.readLine();
 
-			if(line == null) {
+			if(line == null)
+			{
 				throw new Exception("File corrupt.");
 			}
 
-			if(line.length() != dimension) {
+			if(line.length() != dimension)
+			{
 				throw new Exception("File corrupt.");
 			}
 
-			for(int x = 0; x < dimension; x++) {
+			for(int x = 0; x < dimension; x++)
+			{
 				char c = line.charAt(x);
 
 				int value;
 
-				if(c == '.') {
+				if(c == '.')
+				{
 					value = 0;
-				} else {
+				}
+				else
+				{
 
 					value = valueFromChar(c);
 
-					if(value == -1) {
+					if(value == -1)
+					{
 						throw new Exception("File corrupt.");
 					}
 				}

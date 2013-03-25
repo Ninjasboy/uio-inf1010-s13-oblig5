@@ -8,9 +8,11 @@
  * @author armenmi
  * 
  */
-class Board {
+class Board
+{
 
-	interface EventListener {
+	interface EventListener
+	{
 		void onBoardSolutionComplete(Board board);
 
 		void onBoardAllSolutionsComplete(Board board);
@@ -23,20 +25,20 @@ class Board {
 	/**
 	 * Creates and returns a new board that has all its squares empty.
 	 * 
-	 * @param dimension
-	 *            Dimension of the board
-	 * @param boxWidth
-	 *            Width of each box in the board
-	 * @param boxHeight
-	 *            Height of each box in the board
+	 * @param dimension Dimension of the board
+	 * @param boxWidth Width of each box in the board
+	 * @param boxHeight Height of each box in the board
 	 * @return a new Board object.
 	 */
 	static Board emptyBoard(int dimension, int boxWidth, int boxHeight,
-			String title) {
+			String title)
+	{
 		Board board = new Board(dimension, boxWidth, boxHeight, title);
 
-		for(int y = 0; y < board.dimension; y++) {
-			for(int x = 0; x < board.dimension; x++) {
+		for(int y = 0; y < board.dimension; y++)
+		{
+			for(int x = 0; x < board.dimension; x++)
+			{
 				board.squares[y][x] = new DynamicSquare(x, y, board);
 			}
 		}
@@ -47,29 +49,29 @@ class Board {
 	/**
 	 * Creates a board and initializes it with values specified by an array.
 	 * 
-	 * @param dimension
-	 *            Dimension of the board
-	 * @param boxWidth
-	 *            Width of the board
-	 * @param boxHeight
-	 *            Height of the board
-	 * @param boardData
-	 *            Array of values for the board, 0 signifies dynamic
-	 *            (user-fillable) squares
-	 * @param title
-	 *            Title of the board
+	 * @param dimension Dimension of the board
+	 * @param boxWidth Width of the board
+	 * @param boxHeight Height of the board
+	 * @param boardData Array of values for the board, 0 signifies dynamic
+	 *        (user-fillable) squares
+	 * @param title Title of the board
 	 * @return A new board object
 	 */
 	static Board boardFromArray(int dimension, int boxWidth, int boxHeight,
-			int[][] boardData, String title) {
+			int[][] boardData, String title)
+	{
 		Board board = new Board(dimension, boxWidth, boxHeight, title);
 
-		for(int y = 0; y < board.dimension; y++) {
-			for(int x = 0; x < board.dimension; x++) {
+		for(int y = 0; y < board.dimension; y++)
+		{
+			for(int x = 0; x < board.dimension; x++)
+			{
 
-				board.squares[y][x] = (boardData[y][x] != 0) ? new StaticSquare(
-						boardData[y][x], x, y, board) : new DynamicSquare(x, y,
-						board);
+				board.squares[y][x] =
+						(boardData[y][x] != 0) ? new StaticSquare(
+								boardData[y][x], x, y, board)
+								: new DynamicSquare(x, y,
+										board);
 			}
 		}
 
@@ -111,14 +113,12 @@ class Board {
 	/**
 	 * Creates a new board of specified dimensions without squares.
 	 * 
-	 * @param dimension
-	 *            Dimension of new board
-	 * @param boxWidth
-	 *            Width of each box in the board
-	 * @param boxHeight
-	 *            Height of each box in the board
+	 * @param dimension Dimension of new board
+	 * @param boxWidth Width of each box in the board
+	 * @param boxHeight Height of each box in the board
 	 */
-	private Board(int dimension, int boxWidth, int boxHeight, String title) {
+	private Board(int dimension, int boxWidth, int boxHeight, String title)
+	{
 
 		/** Boxes must fit tightly into the board. */
 		assert (dimension % boxWidth) == 0;
@@ -137,7 +137,8 @@ class Board {
 
 		rows = new Row[dimension];
 
-		for(int y = 0; y < dimension; y++) {
+		for(int y = 0; y < dimension; y++)
+		{
 			this.rows[y] = new Row(y, this);
 		}
 
@@ -145,7 +146,8 @@ class Board {
 
 		cols = new Column[dimension];
 
-		for(int x = 0; x < dimension; x++) {
+		for(int x = 0; x < dimension; x++)
+		{
 			this.cols[x] = new Column(x, this);
 		}
 
@@ -157,8 +159,10 @@ class Board {
 
 		int i = 0;
 
-		for(int y = 0; y < dimension; y += boxHeight) {
-			for(int x = 0; x < dimension; x += boxWidth) {
+		for(int y = 0; y < dimension; y += boxHeight)
+		{
+			for(int x = 0; x < dimension; x += boxWidth)
+			{
 				boxes[i++] = new Box(x, y, x + boxWidth, y + boxHeight, this);
 			}
 		}
@@ -167,11 +171,11 @@ class Board {
 	/**
 	 * Returns next (top-left to bottom-right direction) user-fillable square.
 	 * 
-	 * @param square
-	 *            A square object to start from
+	 * @param square A square object to start from
 	 * @return Closest user-fillable square object.
 	 */
-	DynamicSquare nextDynamicSquare(Square square) {
+	DynamicSquare nextDynamicSquare(Square square)
+	{
 
 		return firstDynamicSquare(square.colIndex + 1, square.rowIndex);
 	}
@@ -179,23 +183,25 @@ class Board {
 	/**
 	 * Returns first empty square in the board. @see Board.nextDynamicSquare()
 	 * 
-	 * @param colIndex
-	 *            Index of the column from which to start
-	 * @param rowIndex
-	 *            Index of the row from which to start
+	 * @param colIndex Index of the column from which to start
+	 * @param rowIndex Index of the row from which to start
 	 * @return First dynamic (user-fillable) square to the right and/or bottom
 	 *         of specified column and row.
 	 */
-	DynamicSquare firstDynamicSquare(int colIndex, int rowIndex) {
+	DynamicSquare firstDynamicSquare(int colIndex, int rowIndex)
+	{
 
 		int x = colIndex;
 
-		for(int y = rowIndex; y < dimension; y++) {
-			while(x < dimension) {
+		for(int y = rowIndex; y < dimension; y++)
+		{
+			while(x < dimension)
+			{
 				if(
 				/* squares[y][x].value() == 0 */
-				squares[y][x] instanceof DynamicSquare) {
-					return (DynamicSquare) squares[y][x];
+				squares[y][x] instanceof DynamicSquare)
+				{
+					return (DynamicSquare)squares[y][x];
 				}
 
 				x++;
@@ -207,29 +213,35 @@ class Board {
 		return null;
 	}
 
-	final Row row(int index) {
+	final Row row(int index)
+	{
 		return rows[index];
 	}
 
-	final Square[] rowSquares(int index) {
+	final Square[] rowSquares(int index)
+	{
 		return squares[index];
 	}
 
-	final Column col(int index) {
+	final Column col(int index)
+	{
 		return cols[index];
 	}
 
-	final Box box(int colIndex, int rowIndex) {
+	final Box box(int colIndex, int rowIndex)
+	{
 
 		return boxes[rowIndex / boxHeight * (dimension / boxWidth) + colIndex
 				/ boxWidth];
 	}
 
-	final Square square(int colIndex, int rowIndex) {
+	final Square square(int colIndex, int rowIndex)
+	{
 		return squares[rowIndex][colIndex];
 	}
 
-	final int value(int colIndex, int rowIndex) {
+	final int value(int colIndex, int rowIndex)
+	{
 		return squares[rowIndex][colIndex].value();
 	}
 
@@ -246,24 +258,29 @@ class Board {
 	 * @param eventListener
 	 * @return
 	 */
-	void solve() {
+	void solve()
+	{
 		firstDynamicSquare(0, 0).setNumberMeAndTheRest();
 		eventListener.onBoardAllSolutionsComplete(this);
 	}
 
-	final String title() {
+	final String title()
+	{
 		return title;
 	}
 
-	final int boxWidth() {
+	final int boxWidth()
+	{
 		return boxWidth;
 	}
 
-	final int boxHeight() {
+	final int boxHeight()
+	{
 		return boxHeight;
 	}
 
-	final int dimension() {
+	final int dimension()
+	{
 		return dimension;
 	}
 }

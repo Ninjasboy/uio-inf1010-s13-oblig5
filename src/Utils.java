@@ -7,7 +7,8 @@ import java.io.Writer;
  * @author armenmi
  * 
  */
-public class Utils {
+public class Utils
+{
 
 	static final String newLine = System.getProperty("line.separator");
 
@@ -20,7 +21,8 @@ public class Utils {
 	 * @param writer
 	 * @throws IOException
 	 */
-	public static void writeNewLine(Writer writer) throws IOException {
+	public static void writeNewLine(Writer writer) throws IOException
+	{
 		writer.write(newLine);
 	}
 }

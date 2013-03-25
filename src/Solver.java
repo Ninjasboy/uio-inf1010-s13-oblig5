@@ -5,11 +5,13 @@
  * @author armenmi
  * 
  */
-class Solver implements Runnable {
+class Solver implements Runnable
+{
 
 	final Board board;
 
-	Solver(Board board) {
+	Solver(Board board)
+	{
 		this.board = board;
 	}
 
@@ -19,7 +21,8 @@ class Solver implements Runnable {
 	 * Solves the Sudoku board.
 	 * 
 	 */
-	public void run() {
+	public void run()
+	{
 		board.solve();
 	}
 }

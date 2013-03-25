@@ -27,15 +27,22 @@ import java.awt.Color;
  * by the second argument.
  * 
  */
-class Oblig3 implements Board.EventListener {
+class Oblig3 implements Board.EventListener
+{
 
-	public static void main(String[] args) {
+	public static void main(String[] args)
+	{
 
-		if(args.length >= 2) {
+		if(args.length >= 2)
+		{
 			new Oblig3(args[0], args[1]);
-		} else if(args.length >= 1) {
+		}
+		else if(args.length >= 1)
+		{
 			new Oblig3(args[0], null);
-		} else {
+		}
+		else
+		{
 			new Oblig3(null, null);
 		}
 	}
@@ -73,23 +80,24 @@ class Oblig3 implements Board.EventListener {
 	 * Will always load a board from a file. May or may not ask user to write
 	 * solutions to a file.
 	 * 
-	 * @param boardFilePath
-	 *            Path of board file to load
-	 * @param solutionBufferFilePath
-	 *            Path of solution file to write
+	 * @param boardFilePath Path of board file to load
+	 * @param solutionBufferFilePath Path of solution file to write
 	 */
-	Oblig3(String boardFilePath, String solutionBufferFilePath) {
+	Oblig3(String boardFilePath, String solutionBufferFilePath)
+	{
 
 		boardFile = (boardFilePath != null) ? (new File(boardFilePath))
 				: chooseFileDialog("Load board from file", false);
 
-		if(boardFile == null && boardFilePath == null) {
+		if(boardFile == null && boardFilePath == null)
+		{
 			return;
 		}
 
 		loadBoardFromFile();
 
-		if(solutionBufferFilePath != null) {
+		if(solutionBufferFilePath != null)
+		{
 			solutionFile = new File(solutionBufferFilePath);
 		}
 
@@ -102,11 +110,12 @@ class Oblig3 implements Board.EventListener {
 	 * Only used with IDE-unassisted debugging now. Is called when a value of a
 	 * square of a board is reset.
 	 * 
-	 * @param square
-	 *            The board square that has had its value reset.
+	 * @param square The board square that has had its value reset.
 	 */
-	public void onResetBoardSquareValue(DynamicSquare square) {
-		if(debug) {
+	public void onResetBoardSquareValue(DynamicSquare square)
+	{
+		if(debug)
+		{
 			boardFrame.updateAsCurrentSquare(square);
 			suspendSolvingThread();
 		}
@@ -118,13 +127,13 @@ class Oblig3 implements Board.EventListener {
 	 * Only used with IDE-unassisted debugging now. Is called when a value of a
 	 * square of a board is found to be invalid.
 	 * 
-	 * @param badValue
-	 *            The value that is found to be invalid.
-	 * @param square
-	 *            The board square that the value was tried for.
+	 * @param badValue The value that is found to be invalid.
+	 * @param square The board square that the value was tried for.
 	 */
-	public void onSolvingBadSquareValue(int badValue, DynamicSquare square) {
-		if(debug) {
+	public void onSolvingBadSquareValue(int badValue, DynamicSquare square)
+	{
+		if(debug)
+		{
 			boardFrame.updateSquare(square, badValue, Color.RED);
 			suspendSolvingThread();
 		}
@@ -135,10 +144,10 @@ class Oblig3 implements Board.EventListener {
 	 * 
 	 * Is called when a single solution is found for a board.
 	 * 
-	 * @param board
-	 *            the board that has been solved.
+	 * @param board the board that has been solved.
 	 */
-	public void onBoardSolutionComplete(Board board) {
+	public void onBoardSolutionComplete(Board board)
+	{
 		solutionBuffer.insert();
 		/* System.err.println("Added a solution to the solution buffer."); */
 	}
@@ -148,22 +157,27 @@ class Oblig3 implements Board.EventListener {
 	 * 
 	 * Is called when all of the boards solutions have been found.
 	 * 
-	 * @param board
-	 *            the board that has been solved.
+	 * @param board the board that has been solved.
 	 */
-	public void onBoardAllSolutionsComplete(Board board) {
+	public void onBoardAllSolutionsComplete(Board board)
+	{
 
 		/* System.err.println("All solutions have been found."); */
 
-		if(debug) {
+		if(debug)
+		{
 			return;
 		}
 
-		if(solutionFile == null) {
-			if(!debug) {
+		if(solutionFile == null)
+		{
+			if(!debug)
+			{
 				boardFrame = new BoardFrame(solutionBuffer, this);
 			}
-		} else {
+		}
+		else
+		{
 			saveSolutions();
 		}
 	}
@@ -177,14 +191,16 @@ class Oblig3 implements Board.EventListener {
 	 * IDE-unassisted debugging mode, the board view will be constructed and
 	 * updated during the solving process.
 	 */
-	void startSolvingBoard() {
+	void startSolvingBoard()
+	{
 		board.eventListener = this;
 
 		solutionBuffer = new SudokuBuffer(board);
 
 		Thread solverThread = new Thread(new Solver(board));
 
-		if(debug) {
+		if(debug)
+		{
 			boardFrame = new BoardFrame(solutionBuffer, this);
 		}
 
@@ -196,14 +212,20 @@ class Oblig3 implements Board.EventListener {
 	 * 
 	 * Useful with IDE-unassisted debugging.
 	 */
-	synchronized void suspendSolvingThread() {
+	synchronized void suspendSolvingThread()
+	{
 		solverThreadSuspended = true;
 
-		synchronized(this) {
-			while(solverThreadSuspended) {
-				try {
+		synchronized(this)
+		{
+			while(solverThreadSuspended)
+			{
+				try
+				{
 					wait();
-				} catch(InterruptedException e) {
+				}
+				catch(InterruptedException e)
+				{
 					e.printStackTrace();
 				}
 			}
@@ -215,7 +237,8 @@ class Oblig3 implements Board.EventListener {
 	 * 
 	 * Useful with IDE-unassisted debugging.
 	 */
-	synchronized void resumeSolvingThread() {
+	synchronized void resumeSolvingThread()
+	{
 		solverThreadSuspended = false;
 
 		notify();
@@ -228,13 +251,13 @@ class Oblig3 implements Board.EventListener {
 	/**
 	 * Presents a dialog that lets the user to choose a file.
 	 * 
-	 * @param title
-	 *            Title of the dialog
-	 * @param isSaveDialog
-	 *            Whether this dialog is for saving a file or loading it.
+	 * @param title Title of the dialog
+	 * @param isSaveDialog Whether this dialog is for saving a file or loading
+	 *        it.
 	 * @return Selected file object.
 	 */
-	private File chooseFileDialog(String title, boolean isSaveDialog) {
+	private File chooseFileDialog(String title, boolean isSaveDialog)
+	{
 		FileChooser fileChooser = new FileChooser(useAWT, title, false);
 
 		return fileChooser.getFile();
@@ -243,12 +266,16 @@ class Oblig3 implements Board.EventListener {
 	/**
 	 * Procedure that loads a board from the file used as a startup parameter.
 	 */
-	private void loadBoardFromFile() {
+	private void loadBoardFromFile()
+	{
 		BoardFileLoader loader = new BoardFileLoader();
 
-		try {
+		try
+		{
 			board = loader.boardFromFile(boardFile);
-		} catch(Exception e) {
+		}
+		catch(Exception e)
+		{
 			System.err.println("Could not load board from file.");
 			e.printStackTrace();
 		}
@@ -257,12 +284,15 @@ class Oblig3 implements Board.EventListener {
 	/**
 	 * Procedure to save the solution buffer to the solutions file or stdout.
 	 */
-	void saveSolutions() {
+	void saveSolutions()
+	{
 
-		if(solutionFile == null) {
+		if(solutionFile == null)
+		{
 			solutionFile = chooseFileDialog("Save board solution buffer", true);
 
-			if(solutionFile == null) {
+			if(solutionFile == null)
+			{
 				/** Saving simply aborted. */
 				return;
 			}
@@ -270,16 +300,20 @@ class Oblig3 implements Board.EventListener {
 
 		// System.err.println("Writing solution buffer.");
 
-		try {
+		try
+		{
 			Writer writer = new BufferedWriter(new OutputStreamWriter(
 					(solutionFile != null) ? new FileOutputStream(solutionFile)
 							: System.out));
 
-			SolutionBufferWriter solutionBufferWriter = new SolutionBufferWriter(
-					solutionBuffer, writer);
+			SolutionBufferWriter solutionBufferWriter =
+					new SolutionBufferWriter(
+							solutionBuffer, writer);
 
 			writer.close();
-		} catch(IOException e) {
+		}
+		catch(IOException e)
+		{
 			System.err.println("Could not save board solution buffer to file.");
 			e.printStackTrace();
 		}

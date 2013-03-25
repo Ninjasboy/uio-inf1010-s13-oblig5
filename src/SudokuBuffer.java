@@ -14,7 +14,8 @@ import java.util.List;
  * @author armenmi
  * 
  */
-class SudokuBuffer {
+class SudokuBuffer
+{
 
 	private static final int MAX_LIST_SIZE = 500;
 
@@ -24,10 +25,10 @@ class SudokuBuffer {
 	/**
 	 * Creates a solution buffer that is initially empty.
 	 * 
-	 * @param board
-	 *            The board that the solutions apply to.
+	 * @param board The board that the solutions apply to.
 	 */
-	SudokuBuffer(Board board) {
+	SudokuBuffer(Board board)
+	{
 		this.board = board;
 		solutionList = new LinkedList<int[][]>();
 	}
@@ -35,18 +36,23 @@ class SudokuBuffer {
 	/**
 	 * Takes a snapshot of the board, i.e. all the values in the its squares.
 	 */
-	void insert() {
+	void insert()
+	{
 
-		if(getSolutionCount() == MAX_LIST_SIZE) {
-			System.err.println("List has exceeded maximum allowed size, removing first element.");
+		if(getSolutionCount() == MAX_LIST_SIZE)
+		{
+			System.err
+					.println("List has exceeded maximum allowed size, removing first element.");
 
 			solutionList.remove(0);
 		}
 
 		int[][] boardData = new int[board.dimension()][board.dimension()];
 
-		for(int y = 0; y < board.dimension(); y++) {
-			for(int x = 0; x < board.dimension(); x++) {
+		for(int y = 0; y < board.dimension(); y++)
+		{
+			for(int x = 0; x < board.dimension(); x++)
+			{
 
 				// Square square = board.square(x, y);
 
@@ -69,7 +75,8 @@ class SudokuBuffer {
 	 * @param solutionID
 	 * @return
 	 */
-	int[][] get(int solutionID) {
+	int[][] get(int solutionID)
+	{
 		return solutionList.get(solutionID).clone();
 	}
 
@@ -78,11 +85,13 @@ class SudokuBuffer {
 	 * 
 	 * @return Amount of solutions for the board.
 	 */
-	int getSolutionCount() {
+	int getSolutionCount()
+	{
 		return solutionList.size();
 	}
 
-	final Board board() {
+	final Board board()
+	{
 		return board;
 	}
 }

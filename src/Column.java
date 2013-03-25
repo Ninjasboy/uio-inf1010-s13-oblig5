@@ -7,9 +7,11 @@
  * @author armenmi
  * 
  */
-class Column extends BoardFragment {
+class Column extends BoardFragment
+{
 
-	Column(int index, Board board) {
+	Column(int index, Board board)
+	{
 		super(index, 0, index + 1, board.dimension(), board);
 	}
 }

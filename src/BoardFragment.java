@@ -5,7 +5,8 @@
  * @author armenmi
  * 
  */
-class BoardFragment {
+class BoardFragment
+{
 
 	final int left;
 	final int top;
@@ -20,22 +21,18 @@ class BoardFragment {
 	 * @note <code>right</code>,<code>bottom</code> are not part of this board
 	 *       fragment.
 	 * 
-	 * @param left
-	 *            Column index of the leftmost square that is part of this board
-	 *            fragment.
-	 * @param top
-	 *            Row index of the topmost square that is part of this board
-	 *            fragment.
-	 * @param right
-	 *            Column index RIGHT OF THE EDGE of the rightmost square that is
-	 *            part of this board fragment.
-	 * @param bottom
-	 *            Row index UNDER THE EDGE of the bottom-most square that is
-	 *            part of this board fragment.
-	 * @param board
-	 *            The board that this fragment belongs to.
+	 * @param left Column index of the leftmost square that is part of this
+	 *        board fragment.
+	 * @param top Row index of the topmost square that is part of this board
+	 *        fragment.
+	 * @param right Column index RIGHT OF THE EDGE of the rightmost square that
+	 *        is part of this board fragment.
+	 * @param bottom Row index UNDER THE EDGE of the bottom-most square that is
+	 *        part of this board fragment.
+	 * @param board The board that this fragment belongs to.
 	 */
-	BoardFragment(int left, int top, int right, int bottom, Board board) {
+	BoardFragment(int left, int top, int right, int bottom, Board board)
+	{
 		this.left = left;
 		this.top = top;
 		this.right = right;
@@ -48,15 +45,18 @@ class BoardFragment {
 	 * Checks whether a given value is valid within Sudoku rules - i.e. it is
 	 * not already present across this board fragment.
 	 * 
-	 * @param value
-	 *            A value to check for duplicates.
+	 * @param value A value to check for duplicates.
 	 * @return <code>true</code> if the value is valid, <code>false</code>
 	 *         otherwise.
 	 */
-	boolean isValidValue(int value) {
-		for(int y = top; y < bottom; y++) {
-			for(int x = left; x < right; x++) {
-				if(board.square(x, y).value() == value) {
+	boolean isValidValue(int value)
+	{
+		for(int y = top; y < bottom; y++)
+		{
+			for(int x = left; x < right; x++)
+			{
+				if(board.square(x, y).value() == value)
+				{
 					return false;
 				}
 			}

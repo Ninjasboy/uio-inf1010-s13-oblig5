@@ -7,9 +7,11 @@
  * 
  * @author armenmi
  */
-class Box extends BoardFragment {
+class Box extends BoardFragment
+{
 
-	Box(int left, int top, int right, int bottom, Board board) {
+	Box(int left, int top, int right, int bottom, Board board)
+	{
 		super(left, top, right, bottom, board);
 	}
 }

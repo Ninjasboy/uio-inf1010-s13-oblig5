@@ -22,7 +22,8 @@ import java.awt.event.ActionEvent;
  * @author amn
  * 
  */
-class BoardFrame extends JFrame implements ActionListener {
+class BoardFrame extends JFrame implements ActionListener
+{
 
 	/** Some defaults. */
 	static final int SQUARE_SIZE = 50;
@@ -51,13 +52,12 @@ class BoardFrame extends JFrame implements ActionListener {
 	 * References the parent GUI to call its methods when necessary (an
 	 * alternative to event propagation.)
 	 * 
-	 * @param solutionBuffer
-	 *            A solution buffer object that this frame will display and
-	 *            navigate.
-	 * @param oblig3
-	 *            A parent GUI to use for event propagation.
+	 * @param solutionBuffer A solution buffer object that this frame will
+	 *        display and navigate.
+	 * @param oblig3 A parent GUI to use for event propagation.
 	 */
-	BoardFrame(SudokuBuffer solutionBuffer, Oblig3 oblig3) {
+	BoardFrame(SudokuBuffer solutionBuffer, Oblig3 oblig3)
+	{
 
 		this.solutionBuffer = solutionBuffer;
 		this.oblig3 = oblig3;
@@ -68,7 +68,8 @@ class BoardFrame extends JFrame implements ActionListener {
 				defaultFont.getStyle() | Font.BOLD | Font.ITALIC,
 				defaultFont.getSize());
 
-		squareTextFields = new JTextField[board().dimension()][board().dimension()];
+		squareTextFields =
+				new JTextField[board().dimension()][board().dimension()];
 
 		setPreferredSize(new Dimension(board().dimension() * SQUARE_SIZE,
 				BUTTONS_MARGIN_SIZE + board().dimension() * SQUARE_SIZE));
@@ -86,12 +87,14 @@ class BoardFrame extends JFrame implements ActionListener {
 
 		setVisible(true);
 
-		if(solutionBuffer.getSolutionCount() > 0) {
+		if(solutionBuffer.getSolutionCount() > 0)
+		{
 			showBoardSolution(0);
 		}
 	}
 
-	public final Board board() {
+	public final Board board()
+	{
 		return solutionBuffer.board();
 	}
 
@@ -100,19 +103,27 @@ class BoardFrame extends JFrame implements ActionListener {
 	 * 
 	 * Is called when a <code>JButton</code> is clicked.
 	 */
-	public void actionPerformed(ActionEvent event) {
+	public void actionPerformed(ActionEvent event)
+	{
 
 		Object eventSource = event.getSource();
 
 		/*
 		 * if (eventSource == findSolutionsButton) { findSolutions(); } else
-		 */if(eventSource == nextSolutionButton) {
+		 */if(eventSource == nextSolutionButton)
+		{
 			showBoardSolution(++solutionID);
-		} else if(eventSource == prevSolutionButton) {
+		}
+		else if(eventSource == prevSolutionButton)
+		{
 			showBoardSolution(--solutionID);
-		} else if(eventSource == saveSolutionsButton) {
+		}
+		else if(eventSource == saveSolutionsButton)
+		{
 			oblig3.saveSolutions();
-		} else if(eventSource == stepButton) {
+		}
+		else if(eventSource == stepButton)
+		{
 			/** For use with IDE-unassisted debugging. */
 			oblig3.resumeSolvingThread();
 		}
@@ -124,16 +135,19 @@ class BoardFrame extends JFrame implements ActionListener {
 	 * Also updates the title of the frame accordingly. Remembers the last
 	 * displayed solution by updating state of the frame.
 	 * 
-	 * @param solutionID
-	 *            An ID of the solution to retrieve from solution buffer.
+	 * @param solutionID An ID of the solution to retrieve from solution buffer.
 	 */
-	void showBoardSolution(int solutionID) {
+	void showBoardSolution(int solutionID)
+	{
 		int[][] boardData = solutionBuffer.get(solutionID);
 
-		for(int y = 0; y < board().dimension(); y++) {
-			for(int x = 0; x < board().dimension(); x++) {
+		for(int y = 0; y < board().dimension(); y++)
+		{
+			for(int x = 0; x < board().dimension(); x++)
+			{
 				int value = boardData[y][x];
-				squareTextFields[y][x].setText(Integer.toString((value != 0) ? value
+				squareTextFields[y][x].setText(Integer.toString((value != 0)
+						? value
 						: board().square(x, y).value()));
 			}
 		}
@@ -155,10 +169,10 @@ class BoardFrame extends JFrame implements ActionListener {
 	 * Is used as part of IDE-unassisted debugging when the board is being
 	 * solved.
 	 * 
-	 * @param square
-	 *            The square whose view to update.
+	 * @param square The square whose view to update.
 	 */
-	void updateAsCurrentSquare(DynamicSquare square) {
+	void updateAsCurrentSquare(DynamicSquare square)
+	{
 		updateSquare(square, square.value(), Color.YELLOW);
 	}
 
@@ -169,20 +183,20 @@ class BoardFrame extends JFrame implements ActionListener {
 	 * Tracks state by remembering last updated square, and restores it to
 	 * default upon painting another square.
 	 * 
-	 * @param square
-	 *            Square whose view to update.
-	 * @param value
-	 *            Value to display for the square (i.e. may differ from actual
-	 *            square value)
-	 * @param color
-	 *            Background color of the square view to paint.
+	 * @param square Square whose view to update.
+	 * @param value Value to display for the square (i.e. may differ from actual
+	 *        square value)
+	 * @param color Background color of the square view to paint.
 	 */
-	void updateSquare(DynamicSquare square, int value, Color color) {
-		if(lastTextField != null) {
+	void updateSquare(DynamicSquare square, int value, Color color)
+	{
+		if(lastTextField != null)
+		{
 			lastTextField.setBackground(Color.WHITE);
 		}
 
-		JTextField textField = squareTextFields[square.rowIndex()][square.colIndex()];
+		JTextField textField =
+				squareTextFields[square.rowIndex()][square.colIndex()];
 
 		textField.setText((value != 0) ? Integer.toString(value) : "");
 		textField.setBackground(color);
@@ -195,7 +209,8 @@ class BoardFrame extends JFrame implements ActionListener {
 	 * 
 	 * @return The <code>JPanel</code> object that has been created.
 	 */
-	private JPanel createBoardView() {
+	private JPanel createBoardView()
+	{
 
 		JPanel squareTextFieldsPanel = new JPanel();
 
@@ -208,19 +223,22 @@ class BoardFrame extends JFrame implements ActionListener {
 		setPreferredSize(new Dimension(new Dimension(board().dimension()
 				* SQUARE_SIZE, board().dimension() * SQUARE_SIZE)));
 
-		for(int y = 0; y < board().dimension(); y++) {
+		for(int y = 0; y < board().dimension(); y++)
+		{
 
 			/** finn ut om denne raden trenger en tykker linje på toppen: */
 			int topBorderSize = (y % board().boxHeight() == 0 && y != 0) ? 4
 					: 1;
 
-			for(int x = 0; x < board().dimension(); x++) {
+			for(int x = 0; x < board().dimension(); x++)
+			{
 				/**
 				 * finn ut om denne ruten er en del av en kolonne som skal ha en
 				 * tykkere linje til venstre:
 				 */
-				int leftBorderSize = (x % board().boxWidth() == 0 && x != 0) ? 4
-						: 1;
+				int leftBorderSize =
+						(x % board().boxWidth() == 0 && x != 0) ? 4
+								: 1;
 
 				JTextField squareTextField = new JTextField();
 
@@ -238,7 +256,8 @@ class BoardFrame extends JFrame implements ActionListener {
 
 				int value = board().square(x, y).value();
 
-				if(value != 0) {
+				if(value != 0)
+				{
 					squareTextField.setFont(staticSquareTextFont);
 					squareTextField.setText(Integer.toString(value));
 				}
@@ -257,7 +276,8 @@ class BoardFrame extends JFrame implements ActionListener {
 	 * 
 	 * @return a pointer to the created panel.
 	 */
-	private JPanel createButtons() {
+	private JPanel createButtons()
+	{
 
 		JPanel buttonsPanel = new JPanel();
 
@@ -291,7 +311,8 @@ class BoardFrame extends JFrame implements ActionListener {
 		saveSolutionsButton.addActionListener(this);
 		buttonsPanel.add(saveSolutionsButton);
 
-		if(oblig3.debug) {
+		if(oblig3.debug)
+		{
 			stepButton = new JButton("Step");
 			stepButton.addActionListener(this);
 			buttonsPanel.add(stepButton);

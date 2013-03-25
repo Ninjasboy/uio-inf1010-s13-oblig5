@@ -5,20 +5,21 @@
  * @author armenmi
  * 
  */
-class StaticSquare extends Square {
+class StaticSquare extends Square
+{
 	/**
 	 * Creates a static square with a given value.
 	 * 
-	 * @param value
-	 *            Value to initialize the square with.
+	 * @param value Value to initialize the square with.
 	 * @param colIndex
-	 *            @see Square class
+	 * @see Square class
 	 * @param rowIndex
-	 *            @see Square class
+	 * @see Square class
 	 * @param board
-	 *            @see Square class
+	 * @see Square class
 	 */
-	StaticSquare(int value, int colIndex, int rowIndex, Board board) {
+	StaticSquare(int value, int colIndex, int rowIndex, Board board)
+	{
 		super(colIndex, rowIndex, board);
 
 		this.value = value;
