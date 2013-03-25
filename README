@@ -1,0 +1,3 @@
+This is my solution for mandatory assignment 5 in subject INF1010, Spring 2013, University of Oslo.
+
+The assignment deals with solvign a Sudoku board, usually read from file. It loads the board, applies a "brute-force" solving algorithm that records solutions, and finally presents the user with an interface to view the board and the solutions.
