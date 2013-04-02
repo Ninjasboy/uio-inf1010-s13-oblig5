@@ -10,7 +10,6 @@
  */
 class Board
 {
-
 	interface EventListener
 	{
 		void onBoardSolutionComplete(Board board);
@@ -84,31 +83,31 @@ class Board
 	public EventListener eventListener;
 
 	/** Some form of a title for this board. */
-	private String title;
+	public final String title;
 
 	/** Dimension of this board. */
-	private int dimension;
+	public final int dimension;
 
 	/** Width of each box in this board. */
-	private int boxWidth;
+	public final int boxWidth;
 
 	/** Width of each box in this board. */
-	private int boxHeight;
+	public final int boxHeight;
 
 	/**
 	 * An array of N arrays, each of M squares, where N is amount of rows and M
 	 * is amount of columns in this board.
 	 */
-	private Square[][] squares;
+	private final Square[][] squares;
 
 	/** Array of rows in this board. */
-	private Row[] rows;
+	private final Row[] rows;
 
 	/** Array of columns in this board. */
-	private Column[] cols;
+	private final Column[] cols;
 
 	/** Array of boxes in this board. */
-	private Box[] boxes;
+	private final Box[] boxes;
 
 	/**
 	 * Creates a new board of specified dimensions without squares.
@@ -119,10 +118,12 @@ class Board
 	 */
 	private Board(int dimension, int boxWidth, int boxHeight, String title)
 	{
-
 		/** Boxes must fit tightly into the board. */
-		assert (dimension % boxWidth) == 0;
-		assert (dimension % boxHeight) == 0;
+		if((dimension % boxWidth) != 0 ||
+				(dimension % boxHeight) != 0)
+		{
+			throw new IllegalArgumentException();
+		}
 
 		this.title = title;
 
@@ -242,7 +243,7 @@ class Board
 
 	final int value(int colIndex, int rowIndex)
 	{
-		return squares[rowIndex][colIndex].value();
+		return squares[rowIndex][colIndex].getValue();
 	}
 
 	/**
@@ -252,35 +253,26 @@ class Board
 	 * 
 	 * @deprecated The board should not contain methods like solving itself,
 	 *             this does not play well with principles of good object
-	 *             oriented system design. This is left in only to comply with
-	 *             task specification.
+	 *             oriented system design. This is left to only comply with task
+	 *             specification.
 	 * 
-	 * @param eventListener
 	 * @return
 	 */
-	void solve()
+	@Deprecated void solve()
 	{
 		firstDynamicSquare(0, 0).setNumberMeAndTheRest();
+
 		eventListener.onBoardAllSolutionsComplete(this);
 	}
 
-	final String title()
+	char charFromSquareValue(int value)
 	{
-		return title;
-	}
+		if(value < 1 || value > 36)
+		{
+			throw new IndexOutOfBoundsException("Value out of range.");
+		}
 
-	final int boxWidth()
-	{
-		return boxWidth;
-	}
-
-	final int boxHeight()
-	{
-		return boxHeight;
-	}
-
-	final int dimension()
-	{
-		return dimension;
+		return (value < 36) ? ((char)((value < 10) ? (value + 48)
+				: (value + 55))) : '@';
 	}
 }

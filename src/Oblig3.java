@@ -1,15 +1,10 @@
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.Color;
 
 /**
@@ -29,10 +24,8 @@ import java.awt.Color;
  */
 class Oblig3 implements Board.EventListener
 {
-
 	public static void main(String[] args)
 	{
-
 		if(args.length >= 2)
 		{
 			new Oblig3(args[0], args[1]);
@@ -56,7 +49,7 @@ class Oblig3 implements Board.EventListener
 	 * 
 	 * FYI, JVM on Apple Macs has native file dialogs when using AWT.
 	 */
-	final boolean useAWT = false;
+	final boolean useAWT = true;
 
 	/** Board file that this application loads. */
 	private File boardFile;
@@ -85,9 +78,19 @@ class Oblig3 implements Board.EventListener
 	 */
 	Oblig3(String boardFilePath, String solutionBufferFilePath)
 	{
-
-		boardFile = (boardFilePath != null) ? (new File(boardFilePath))
-				: chooseFileDialog("Load board from file", false);
+		if(boardFilePath != null)
+		{
+			boardFile = new File(boardFilePath);
+		}
+		else
+		{
+			boardFile = chooseFileDialog("Load board from file", false);
+			
+			if(boardFile == null)
+			{
+				return;
+			}
+		}
 
 		if(boardFile == null && boardFilePath == null)
 		{
@@ -112,12 +115,22 @@ class Oblig3 implements Board.EventListener
 	 * 
 	 * @param square The board square that has had its value reset.
 	 */
-	public void onResetBoardSquareValue(DynamicSquare square)
+	@Override public void onResetBoardSquareValue(DynamicSquare square)
 	{
 		if(debug)
 		{
 			boardFrame.updateAsCurrentSquare(square);
-			suspendSolvingThread();
+			
+			/*try
+			{
+				Thread.sleep(10);
+			}
+			catch(InterruptedException e)
+			{
+				
+			}*/
+			
+			//suspendSolvingThread();
 		}
 	}
 
@@ -130,12 +143,23 @@ class Oblig3 implements Board.EventListener
 	 * @param badValue The value that is found to be invalid.
 	 * @param square The board square that the value was tried for.
 	 */
-	public void onSolvingBadSquareValue(int badValue, DynamicSquare square)
+	@Override public void onSolvingBadSquareValue(int badValue,
+			DynamicSquare square)
 	{
 		if(debug)
 		{
 			boardFrame.updateSquare(square, badValue, Color.RED);
-			suspendSolvingThread();
+			
+			/*try
+			{
+				Thread.sleep(10);
+			}
+			catch(InterruptedException e)
+			{
+				
+			}*/
+			
+			//suspendSolvingThread();
 		}
 	}
 
@@ -146,9 +170,9 @@ class Oblig3 implements Board.EventListener
 	 * 
 	 * @param board the board that has been solved.
 	 */
-	public void onBoardSolutionComplete(Board board)
+	@Override public void onBoardSolutionComplete(Board board)
 	{
-		solutionBuffer.insert();
+		solutionBuffer.insert(board);
 		/* System.err.println("Added a solution to the solution buffer."); */
 	}
 
@@ -159,9 +183,8 @@ class Oblig3 implements Board.EventListener
 	 * 
 	 * @param board the board that has been solved.
 	 */
-	public void onBoardAllSolutionsComplete(Board board)
+	@Override public void onBoardAllSolutionsComplete(Board board)
 	{
-
 		/* System.err.println("All solutions have been found."); */
 
 		if(debug)
@@ -173,7 +196,7 @@ class Oblig3 implements Board.EventListener
 		{
 			if(!debug)
 			{
-				boardFrame = new BoardFrame(solutionBuffer, this);
+				boardFrame = new BoardFrame(board, solutionBuffer, this);
 			}
 		}
 		else
@@ -201,7 +224,7 @@ class Oblig3 implements Board.EventListener
 
 		if(debug)
 		{
-			boardFrame = new BoardFrame(solutionBuffer, this);
+			boardFrame = new BoardFrame(board, solutionBuffer, this);
 		}
 
 		solverThread.start();
@@ -258,7 +281,7 @@ class Oblig3 implements Board.EventListener
 	 */
 	private File chooseFileDialog(String title, boolean isSaveDialog)
 	{
-		FileChooser fileChooser = new FileChooser(useAWT, title, false);
+		FileChooser fileChooser = new FileChooser(useAWT, title, isSaveDialog);
 
 		return fileChooser.getFile();
 	}
@@ -302,13 +325,22 @@ class Oblig3 implements Board.EventListener
 
 		try
 		{
-			Writer writer = new BufferedWriter(new OutputStreamWriter(
-					(solutionFile != null) ? new FileOutputStream(solutionFile)
-							: System.out));
+			Writer writer = null;
+
+			if(solutionFile != null)
+			{
+				writer = new BufferedWriter(new FileWriter(solutionFile));
+
+			}
+			else
+			{
+				writer = new OutputStreamWriter(System.out);
+			}
 
 			SolutionBufferWriter solutionBufferWriter =
-					new SolutionBufferWriter(
-							solutionBuffer, writer);
+					new SolutionBufferWriter(writer);
+
+			solutionBufferWriter.write(solutionBuffer);
 
 			writer.close();
 		}
@@ -317,5 +349,10 @@ class Oblig3 implements Board.EventListener
 			System.err.println("Could not save board solution buffer to file.");
 			e.printStackTrace();
 		}
+	}
+	
+	void onClickStepButton()
+	{
+		resumeSolvingThread();
 	}
 }

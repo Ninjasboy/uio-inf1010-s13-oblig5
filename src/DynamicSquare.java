@@ -20,16 +20,12 @@ class DynamicSquare extends Square
 	 *             I would argue that a separate solver object that implements a
 	 *             specific method of solving a Sudoku board takes care of the
 	 *             solving entirely.
-	 * 
-	 * @param tryValue Value to try for this square
-	 * @param eventListener an object whose methods are called in response to
-	 *        changing the board data.
 	 */
-	void setNumberMeAndTheRest()
+	@Deprecated void setNumberMeAndTheRest()
 	{
 		int tryValue;
 
-		for(tryValue = value + 1; tryValue <= board.dimension(); tryValue++)
+		for(tryValue = value + 1; tryValue <= board.dimension; tryValue++)
 		{
 
 			/*
@@ -37,8 +33,9 @@ class DynamicSquare extends Square
 			 * " for square at row " + rowIndex + " column " + colIndex);
 			 */
 
-			if(row().isValidValue(tryValue) && col().isValidValue(tryValue)
-					&& box().isValidValue(tryValue))
+			if(row().isValidValue(tryValue) &&
+					col().isValidValue(tryValue) &&
+					box().isValidValue(tryValue))
 			{
 
 				/*
@@ -80,32 +77,7 @@ class DynamicSquare extends Square
 		 * No more squares or no valid values for this square. Clear the value
 		 * and try another value for the previous square again.
 		 */
-
-		/*
-		 * if(tryValue > board.dimension()) { System.err.println(colIndex + ":"
-		 * + rowIndex + " " + "OVERFLOW, returning."); } else {
-		 * System.err.println(colIndex + ":" + rowIndex + " " +
-		 * "BOARD END, returning."); }
-		 */
-
 		reset(0);
-
-		// board.prevDynamicSquare(this).setNumberMeAndTheRest();
-	}
-
-	final Row row()
-	{
-		return board.row(rowIndex);
-	}
-
-	final Column col()
-	{
-		return board.col(colIndex);
-	}
-
-	final Box box()
-	{
-		return board.box(colIndex, rowIndex);
 	}
 
 	/**
@@ -118,6 +90,7 @@ class DynamicSquare extends Square
 	void reset(int newValue)
 	{
 		this.value = newValue;
+
 		board.eventListener.onResetBoardSquareValue(this);
 	}
 }

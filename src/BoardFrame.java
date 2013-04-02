@@ -18,9 +18,6 @@ import java.awt.event.ActionEvent;
 
 /**
  * Part of the GUI. Displays a board and navigates its solution(s).
- * 
- * @author amn
- * 
  */
 class BoardFrame extends JFrame implements ActionListener
 {
@@ -33,7 +30,7 @@ class BoardFrame extends JFrame implements ActionListener
 	private SudokuBuffer solutionBuffer;
 	/** An array of the text fields that paint the board squares. */
 	private JTextField[][] squareTextFields;
-	private JButton findSolutionsButton, nextSolutionButton,
+	private JButton nextSolutionButton,
 			prevSolutionButton, saveSolutionsButton;
 	/** Only when debug mode is set. */
 	private JButton stepButton;
@@ -46,6 +43,8 @@ class BoardFrame extends JFrame implements ActionListener
 	/** Reference to parent UI, for event propagation. */
 	private Oblig3 oblig3;
 
+	private final Board board;
+	
 	/**
 	 * Creates a board frame that is linked to a board solution buffer.
 	 * 
@@ -56,23 +55,23 @@ class BoardFrame extends JFrame implements ActionListener
 	 *        display and navigate.
 	 * @param oblig3 A parent GUI to use for event propagation.
 	 */
-	BoardFrame(SudokuBuffer solutionBuffer, Oblig3 oblig3)
+	BoardFrame(Board board, SudokuBuffer solutionBuffer, Oblig3 oblig3)
 	{
-
+		this.board = board;
 		this.solutionBuffer = solutionBuffer;
 		this.oblig3 = oblig3;
 
-		Font defaultFont = UIManager.getFont("TextField.font");
+		Font defaultFont = UIManager.getFont("TextField.font"); //$NON-NLS-1$
 
 		staticSquareTextFont = new Font(defaultFont.getName(),
 				defaultFont.getStyle() | Font.BOLD | Font.ITALIC,
 				defaultFont.getSize());
 
 		squareTextFields =
-				new JTextField[board().dimension()][board().dimension()];
+				new JTextField[board().dimension][board().dimension];
 
-		setPreferredSize(new Dimension(board().dimension() * SQUARE_SIZE,
-				BUTTONS_MARGIN_SIZE + board().dimension() * SQUARE_SIZE));
+		setPreferredSize(new Dimension(board().dimension * SQUARE_SIZE,
+				BUTTONS_MARGIN_SIZE + board().dimension * SQUARE_SIZE));
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
@@ -103,14 +102,11 @@ class BoardFrame extends JFrame implements ActionListener
 	 * 
 	 * Is called when a <code>JButton</code> is clicked.
 	 */
-	public void actionPerformed(ActionEvent event)
+	@Override public void actionPerformed(ActionEvent event)
 	{
-
 		Object eventSource = event.getSource();
 
-		/*
-		 * if (eventSource == findSolutionsButton) { findSolutions(); } else
-		 */if(eventSource == nextSolutionButton)
+		if(eventSource == nextSolutionButton)
 		{
 			showBoardSolution(++solutionID);
 		}
@@ -125,7 +121,7 @@ class BoardFrame extends JFrame implements ActionListener
 		else if(eventSource == stepButton)
 		{
 			/** For use with IDE-unassisted debugging. */
-			oblig3.resumeSolvingThread();
+			oblig3.onClickStepButton();
 		}
 	}
 
@@ -137,29 +133,26 @@ class BoardFrame extends JFrame implements ActionListener
 	 * 
 	 * @param solutionID An ID of the solution to retrieve from solution buffer.
 	 */
-	void showBoardSolution(int solutionID)
+	void showBoardSolution(int showSolutionID)
 	{
-		int[][] boardData = solutionBuffer.get(solutionID);
+		int[][] boardData = solutionBuffer.get(showSolutionID);
 
-		for(int y = 0; y < board().dimension(); y++)
+		for(int y = 0; y < board().dimension; y++)
 		{
-			for(int x = 0; x < board().dimension(); x++)
+			for(int x = 0; x < board().dimension; x++)
 			{
-				int value = boardData[y][x];
-				squareTextFields[y][x].setText(Integer.toString((value != 0)
-						? value
-						: board().square(x, y).value()));
+				squareTextFields[y][x].setText(squareText(boardData[y][x]));
 			}
 		}
 
-		this.solutionID = solutionID;
+		solutionID = showSolutionID;
 
 		int solutionCount = solutionBuffer.getSolutionCount();
 
 		nextSolutionButton.setEnabled(solutionID + 1 < solutionCount);
 		prevSolutionButton.setEnabled(solutionID > 0);
 
-		setTitle(board().title() + " " + (solutionID + 1) + "/" + solutionCount);
+		setTitle(board().title + " " + (solutionID + 1) + "/" + solutionCount); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
@@ -173,7 +166,7 @@ class BoardFrame extends JFrame implements ActionListener
 	 */
 	void updateAsCurrentSquare(DynamicSquare square)
 	{
-		updateSquare(square, square.value(), Color.YELLOW);
+		updateSquare(square, square.getValue(), Color.YELLOW);
 	}
 
 	/**
@@ -196,14 +189,19 @@ class BoardFrame extends JFrame implements ActionListener
 		}
 
 		JTextField textField =
-				squareTextFields[square.rowIndex()][square.colIndex()];
+				squareTextFields[square.rowIndex][square.colIndex];
 
-		textField.setText((value != 0) ? Integer.toString(value) : "");
+		textField.setText(squareText(value)); //$NON-NLS-1$
 		textField.setBackground(color);
 
 		lastTextField = textField;
 	}
 
+	public String squareText(int value)
+	{
+		return (value != 0) ? String.valueOf(board.charFromSquareValue(value)) : "";
+	}
+	
 	/**
 	 * Creates the view of the board, with typical Sudoku visual style.
 	 * 
@@ -214,30 +212,30 @@ class BoardFrame extends JFrame implements ActionListener
 
 		JPanel squareTextFieldsPanel = new JPanel();
 
-		squareTextFieldsPanel.setLayout(new GridLayout(board().dimension(),
-				board().dimension()));
+		squareTextFieldsPanel.setLayout(new GridLayout(board().dimension,
+				board().dimension));
 		squareTextFieldsPanel.setAlignmentX(CENTER_ALIGNMENT);
 		squareTextFieldsPanel.setAlignmentY(CENTER_ALIGNMENT);
 
 		/** Why is there a Dimension taking a Dimension?? */
-		setPreferredSize(new Dimension(new Dimension(board().dimension()
-				* SQUARE_SIZE, board().dimension() * SQUARE_SIZE)));
+		setPreferredSize(new Dimension(new Dimension(board().dimension
+				* SQUARE_SIZE, board().dimension * SQUARE_SIZE)));
 
-		for(int y = 0; y < board().dimension(); y++)
+		for(int y = 0; y < board.dimension; y++)
 		{
 
 			/** finn ut om denne raden trenger en tykker linje på toppen: */
-			int topBorderSize = (y % board().boxHeight() == 0 && y != 0) ? 4
+			int topBorderSize = (y % board().boxHeight == 0 && y != 0) ? 4
 					: 1;
 
-			for(int x = 0; x < board().dimension(); x++)
+			for(int x = 0; x < board.dimension; x++)
 			{
 				/**
 				 * finn ut om denne ruten er en del av en kolonne som skal ha en
 				 * tykkere linje til venstre:
 				 */
 				int leftBorderSize =
-						(x % board().boxWidth() == 0 && x != 0) ? 4
+						(x % board.boxWidth == 0 && x != 0) ? 4
 								: 1;
 
 				JTextField squareTextField = new JTextField();
@@ -254,12 +252,12 @@ class BoardFrame extends JFrame implements ActionListener
 				squareTextField.setPreferredSize(new Dimension(SQUARE_SIZE,
 						SQUARE_SIZE));
 
-				int value = board().square(x, y).value();
+				int value = board.square(x, y).getValue();
 
 				if(value != 0)
 				{
 					squareTextField.setFont(staticSquareTextFont);
-					squareTextField.setText(Integer.toString(value));
+					squareTextField.setText(squareText(value));
 				}
 
 				squareTextFields[y][x] = squareTextField;
@@ -297,17 +295,17 @@ class BoardFrame extends JFrame implements ActionListener
 		 * buttonsPanel.add(findSolutionsButton);
 		 */
 
-		nextSolutionButton = new JButton("Neste løsning");
+		nextSolutionButton = new JButton("Next solution");
 		nextSolutionButton.addActionListener(this);
 		nextSolutionButton.setEnabled(false);
 		buttonsPanel.add(nextSolutionButton);
 
-		prevSolutionButton = new JButton("Forrige løsning");
+		prevSolutionButton = new JButton("Previous solution");
 		prevSolutionButton.addActionListener(this);
 		prevSolutionButton.setEnabled(false);
 		buttonsPanel.add(prevSolutionButton);
 
-		saveSolutionsButton = new JButton("Lagre løsningene");
+		saveSolutionsButton = new JButton("Save solutions");
 		saveSolutionsButton.addActionListener(this);
 		buttonsPanel.add(saveSolutionsButton);
 

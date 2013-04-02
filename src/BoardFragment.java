@@ -55,7 +55,7 @@ class BoardFragment
 		{
 			for(int x = left; x < right; x++)
 			{
-				if(board.square(x, y).value() == value)
+				if(board.square(x, y).getValue() == value)
 				{
 					return false;
 				}

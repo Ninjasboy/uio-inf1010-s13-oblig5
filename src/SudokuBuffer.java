@@ -1,11 +1,4 @@
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.List;
 
 /**
@@ -16,10 +9,10 @@ import java.util.List;
  */
 class SudokuBuffer
 {
-
 	private static final int MAX_LIST_SIZE = 500;
 
-	private final Board board;
+	public final Board board;
+
 	private final List<int[][]> solutionList;
 
 	/**
@@ -36,9 +29,10 @@ class SudokuBuffer
 	/**
 	 * Takes a snapshot of the board, i.e. all the values in the its squares.
 	 */
-	void insert()
+	void insert(Board board)
 	{
-
+		assert (board == this.board);
+		
 		if(getSolutionCount() == MAX_LIST_SIZE)
 		{
 			System.err
@@ -47,11 +41,11 @@ class SudokuBuffer
 			solutionList.remove(0);
 		}
 
-		int[][] boardData = new int[board.dimension()][board.dimension()];
+		int[][] boardData = new int[board.dimension][board.dimension];
 
-		for(int y = 0; y < board.dimension(); y++)
+		for(int y = 0; y < board.dimension; y++)
 		{
-			for(int x = 0; x < board.dimension(); x++)
+			for(int x = 0; x < board.dimension; x++)
 			{
 
 				// Square square = board.square(x, y);

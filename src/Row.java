@@ -12,6 +12,6 @@ class Row extends BoardFragment
 
 	Row(int index, Board board)
 	{
-		super(0, index, board.dimension(), index + 1, board);
+		super(0, index, board.dimension, index + 1, board);
 	}
 }

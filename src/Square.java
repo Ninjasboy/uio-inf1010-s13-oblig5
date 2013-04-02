@@ -8,11 +8,11 @@
  */
 class Square
 {
+	public final int colIndex;
+	public final int rowIndex;
+	public final Board board;
 
 	protected int value;
-	protected final int colIndex;
-	protected final int rowIndex;
-	protected final Board board;
 
 	/**
 	 * Creates a dynamic square at specified column and row, that is part of
@@ -29,18 +29,23 @@ class Square
 		this.board = board;
 	}
 
-	final int value()
+	int getValue()
 	{
 		return value;
 	}
-
-	final int rowIndex()
+	
+	Row row()
 	{
-		return rowIndex;
+		return board.row(rowIndex);
 	}
 
-	final int colIndex()
+	Column col()
 	{
-		return colIndex;
+		return board.col(colIndex);
 	}
+
+	Box box()
+	{
+		return board.box(colIndex, rowIndex);
+	}	
 }

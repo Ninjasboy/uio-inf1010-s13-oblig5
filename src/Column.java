@@ -12,6 +12,6 @@ class Column extends BoardFragment
 
 	Column(int index, Board board)
 	{
-		super(index, 0, index + 1, board.dimension(), board);
+		super(index, 0, index + 1, board.dimension, board);
 	}
 }

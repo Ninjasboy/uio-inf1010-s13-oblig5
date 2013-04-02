@@ -10,7 +10,7 @@ import java.io.Writer;
 public class Utils
 {
 
-	static final String newLine = System.getProperty("line.separator");
+	static final String newLine = System.getProperty("line.separator"); //$NON-NLS-1$
 
 	/**
 	 * Aids in writing new lines into Writer streams.

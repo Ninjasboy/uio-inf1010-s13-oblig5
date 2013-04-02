@@ -7,7 +7,6 @@
  */
 class Solver implements Runnable
 {
-
 	final Board board;
 
 	Solver(Board board)
@@ -21,7 +20,7 @@ class Solver implements Runnable
 	 * Solves the Sudoku board.
 	 * 
 	 */
-	public void run()
+	@Override public void run()
 	{
 		board.solve();
 	}

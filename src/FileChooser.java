@@ -14,8 +14,6 @@ import javax.swing.JFileChooser;
  */
 class FileChooser
 {
-	private final boolean useNative;
-
 	private File file;
 
 	/**
@@ -29,8 +27,6 @@ class FileChooser
 	 */
 	FileChooser(boolean useNative, String title, boolean isSaveDialog)
 	{
-		this.useNative = useNative;
-
 		if(useNative)
 		{
 			createNative(title, isSaveDialog);
@@ -53,7 +49,10 @@ class FileChooser
 
 		fileDialog.setVisible(true);
 
-		file = new File(fileDialog.getFile());
+		file =
+				(fileDialog.getFile() != null) ? (new File(
+						fileDialog.getDirectory() + fileDialog.getFile()))
+						: null;
 	}
 
 	private void createSwing(String title, boolean isSaveDialog)
