@@ -21,9 +21,9 @@ class SolutionBufferWriter
 	/**
 	 * Writes a solution buffer using the writer.
 	 */
-	void write(SudokuBuffer solutionBuffer) throws IOException
+	void write(SolutionBuffer solutionBuffer) throws IOException
 	{
-		for(int i = 0; i < solutionBuffer.getSolutionCount(); i++)
+		for(int i = 0; i < solutionBuffer.size(); i++)
 		{
 			writeSolution(solutionBuffer, i);
 		}
@@ -36,7 +36,7 @@ class SolutionBufferWriter
 	 * @param index Index of the solution to use.
 	 * @throws IOException
 	 */
-	void writeSolution(SudokuBuffer solutionBuffer, int index)
+	void writeSolution(SolutionBuffer solutionBuffer, int index)
 			throws IOException
 	{
 		// System.err.println("Writing solution #" + (index + 1));

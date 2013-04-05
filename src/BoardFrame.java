@@ -26,8 +26,12 @@ class BoardFrame extends JFrame implements ActionListener
 	static final int SQUARE_SIZE = 50;
 	static final int BUTTONS_MARGIN_SIZE = 50;
 
+	final public boolean mode;
+	final public Board board;
+	final public String title;
+	
 	/** The solution buffer model that this view displays. */
-	private SudokuBuffer solutionBuffer;
+	private SolutionBuffer solutionBuffer;
 	/** An array of the text fields that paint the board squares. */
 	private JTextField[][] squareTextFields;
 	private JButton nextSolutionButton,
@@ -40,11 +44,7 @@ class BoardFrame extends JFrame implements ActionListener
 	private int solutionID;
 	/** When board is being solved, this tracks last updated square view. */
 	private JTextField lastTextField;
-	/** Reference to parent UI, for event propagation. */
-	private Oblig3 oblig3;
-
-	private final Board board;
-	
+		
 	/**
 	 * Creates a board frame that is linked to a board solution buffer.
 	 * 
@@ -55,11 +55,12 @@ class BoardFrame extends JFrame implements ActionListener
 	 *        display and navigate.
 	 * @param oblig3 A parent GUI to use for event propagation.
 	 */
-	BoardFrame(Board board, SudokuBuffer solutionBuffer, Oblig3 oblig3)
+	BoardFrame(Board board, SolutionBuffer solutionBuffer, String title, boolean mode)
 	{
+		this.title = title;
 		this.board = board;
 		this.solutionBuffer = solutionBuffer;
-		this.oblig3 = oblig3;
+		this.mode = mode;
 
 		Font defaultFont = UIManager.getFont("TextField.font"); //$NON-NLS-1$
 
@@ -68,10 +69,10 @@ class BoardFrame extends JFrame implements ActionListener
 				defaultFont.getSize());
 
 		squareTextFields =
-				new JTextField[board().dimension][board().dimension];
+				new JTextField[board.dimension][board.dimension];
 
-		setPreferredSize(new Dimension(board().dimension * SQUARE_SIZE,
-				BUTTONS_MARGIN_SIZE + board().dimension * SQUARE_SIZE));
+		setPreferredSize(new Dimension(board.dimension * SQUARE_SIZE,
+				BUTTONS_MARGIN_SIZE + board.dimension * SQUARE_SIZE));
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
@@ -86,15 +87,10 @@ class BoardFrame extends JFrame implements ActionListener
 
 		setVisible(true);
 
-		if(solutionBuffer.getSolutionCount() > 0)
+		if(solutionBuffer.size() > 0)
 		{
 			showBoardSolution(0);
 		}
-	}
-
-	public final Board board()
-	{
-		return solutionBuffer.board();
 	}
 
 	/**
@@ -116,12 +112,12 @@ class BoardFrame extends JFrame implements ActionListener
 		}
 		else if(eventSource == saveSolutionsButton)
 		{
-			oblig3.saveSolutions();
+			throw new RuntimeException("Not implemented.");
 		}
 		else if(eventSource == stepButton)
 		{
 			/** For use with IDE-unassisted debugging. */
-			oblig3.onClickStepButton();
+			throw new RuntimeException("Not implemented.");
 		}
 	}
 
@@ -137,9 +133,9 @@ class BoardFrame extends JFrame implements ActionListener
 	{
 		int[][] boardData = solutionBuffer.get(showSolutionID);
 
-		for(int y = 0; y < board().dimension; y++)
+		for(int y = 0; y < board.dimension; y++)
 		{
-			for(int x = 0; x < board().dimension; x++)
+			for(int x = 0; x < board.dimension; x++)
 			{
 				squareTextFields[y][x].setText(squareText(boardData[y][x]));
 			}
@@ -147,12 +143,12 @@ class BoardFrame extends JFrame implements ActionListener
 
 		solutionID = showSolutionID;
 
-		int solutionCount = solutionBuffer.getSolutionCount();
+		int solutionCount = solutionBuffer.size();
 
 		nextSolutionButton.setEnabled(solutionID + 1 < solutionCount);
 		prevSolutionButton.setEnabled(solutionID > 0);
 
-		setTitle(board().title + " " + (solutionID + 1) + "/" + solutionCount); //$NON-NLS-1$ //$NON-NLS-2$
+		setTitle(title + " " + (solutionID + 1) + "/" + solutionCount); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
@@ -169,6 +165,11 @@ class BoardFrame extends JFrame implements ActionListener
 		updateSquare(square, square.getValue(), Color.YELLOW);
 	}
 
+	void updateCurrent(int x, int y, int value)
+	{
+		updateSquare(x, y, value, Color.YELLOW);
+	}
+	
 	/**
 	 * Updates the view of the specified square, using given value and
 	 * background color.
@@ -183,20 +184,25 @@ class BoardFrame extends JFrame implements ActionListener
 	 */
 	void updateSquare(DynamicSquare square, int value, Color color)
 	{
+		updateSquare(square.colIndex, square.rowIndex, value, color);
+	}
+
+	void updateSquare(int x, int y, int value, Color color)
+	{
 		if(lastTextField != null)
 		{
 			lastTextField.setBackground(Color.WHITE);
 		}
 
 		JTextField textField =
-				squareTextFields[square.rowIndex][square.colIndex];
+				squareTextFields[y][x];
 
 		textField.setText(squareText(value)); //$NON-NLS-1$
 		textField.setBackground(color);
 
 		lastTextField = textField;
 	}
-
+	
 	public String squareText(int value)
 	{
 		return (value != 0) ? String.valueOf(board.charFromSquareValue(value)) : "";
@@ -209,23 +215,22 @@ class BoardFrame extends JFrame implements ActionListener
 	 */
 	private JPanel createBoardView()
 	{
-
 		JPanel squareTextFieldsPanel = new JPanel();
 
-		squareTextFieldsPanel.setLayout(new GridLayout(board().dimension,
-				board().dimension));
+		squareTextFieldsPanel.setLayout(new GridLayout(board.dimension,
+				board.dimension));
 		squareTextFieldsPanel.setAlignmentX(CENTER_ALIGNMENT);
 		squareTextFieldsPanel.setAlignmentY(CENTER_ALIGNMENT);
 
 		/** Why is there a Dimension taking a Dimension?? */
-		setPreferredSize(new Dimension(new Dimension(board().dimension
-				* SQUARE_SIZE, board().dimension * SQUARE_SIZE)));
+		setPreferredSize(new Dimension(new Dimension(board.dimension
+				* SQUARE_SIZE, board.dimension * SQUARE_SIZE)));
 
 		for(int y = 0; y < board.dimension; y++)
 		{
 
 			/** finn ut om denne raden trenger en tykker linje pÃ¥ toppen: */
-			int topBorderSize = (y % board().boxHeight == 0 && y != 0) ? 4
+			int topBorderSize = (y % board.boxHeight == 0 && y != 0) ? 4
 					: 1;
 
 			for(int x = 0; x < board.dimension; x++)
@@ -284,10 +289,10 @@ class BoardFrame extends JFrame implements ActionListener
 		/**
 		 * Oppgaven sier:
 		 * 
-		 * "NÃ¥r alle lÃ¸sninger er funnet skal main metoden lage et graï¬sk
+		 * "NŒr alle l¿sninger er funnet skal main metoden lage et grafisk
 		 * brukergrensesnitt..."
 		 * 
-		 * SÃ¥ det er ikke nÃ¸dvendig med finn lÃ¸sninger- knapp.
+		 * SŒ det er ikke n¿dvendig med finn l¿sninger- knapp.
 		 */
 		/*
 		 * findSolutionsButton = new JButton("Finn lÃ¸sning(er)");
@@ -309,7 +314,7 @@ class BoardFrame extends JFrame implements ActionListener
 		saveSolutionsButton.addActionListener(this);
 		buttonsPanel.add(saveSolutionsButton);
 
-		if(oblig3.debug)
+		if(mode)
 		{
 			stepButton = new JButton("Step");
 			stepButton.addActionListener(this);

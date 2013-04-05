@@ -22,26 +22,26 @@ import java.awt.Color;
  * by the second argument.
  * 
  */
-class Oblig3 implements Board.EventListener
+class Application implements Board.EventListener
 {
 	public static void main(String[] args)
 	{
 		if(args.length >= 2)
 		{
-			new Oblig3(args[0], args[1]);
+			new Application(args[0], args[1]);
 		}
 		else if(args.length >= 1)
 		{
-			new Oblig3(args[0], null);
+			new Application(args[0], null);
 		}
 		else
 		{
-			new Oblig3(null, null);
+			new Application(null, null);
 		}
 	}
 
 	/** IDE-unassisted debugging mode switch. */
-	final boolean debug = false;
+	final boolean debug = true;
 
 	/**
 	 * Whether to prefer AWT to Swing. AWT > Swing :-). Say no to alien
@@ -60,7 +60,7 @@ class Oblig3 implements Board.EventListener
 	// /** File to write solution buffer to. */
 	private File solutionFile;
 	/** Solution buffer object that holds all of the boards solutions. */
-	private SudokuBuffer solutionBuffer;
+	private SolutionBuffer solutionBuffer;
 	/**
 	 * Whether the solution solving thread is suspended. Used with
 	 * IDE-unassisted debugging.
@@ -76,7 +76,7 @@ class Oblig3 implements Board.EventListener
 	 * @param boardFilePath Path of board file to load
 	 * @param solutionBufferFilePath Path of solution file to write
 	 */
-	Oblig3(String boardFilePath, String solutionBufferFilePath)
+	Application(String boardFilePath, String solutionBufferFilePath)
 	{
 		if(boardFilePath != null)
 		{
@@ -172,7 +172,7 @@ class Oblig3 implements Board.EventListener
 	 */
 	@Override public void onBoardSolutionComplete(Board board)
 	{
-		solutionBuffer.insert(board);
+		solutionBuffer.add(board);
 		/* System.err.println("Added a solution to the solution buffer."); */
 	}
 
@@ -196,7 +196,7 @@ class Oblig3 implements Board.EventListener
 		{
 			if(!debug)
 			{
-				boardFrame = new BoardFrame(board, solutionBuffer, this);
+				createBoardFrame(board);
 			}
 		}
 		else
@@ -218,18 +218,41 @@ class Oblig3 implements Board.EventListener
 	{
 		board.eventListener = this;
 
-		solutionBuffer = new SudokuBuffer(board);
+		solutionBuffer = new SolutionBuffer(board);
 
-		Thread solverThread = new Thread(new Solver(board));
+		Thread solverThread = new Thread()
+		{
+			@Override public void run()
+			{
+				board.solve();
+			}
+		};
 
 		if(debug)
 		{
-			boardFrame = new BoardFrame(board, solutionBuffer, this);
+			createBoardFrame(board);
 		}
 
 		solverThread.start();
 	}
 
+	private void createBoardFrame(Board board)
+	{
+		assert board == this.board;
+		
+		String boardFrameTitle;
+		
+		try
+		{
+			boardFrameTitle = boardFile.getCanonicalPath();
+		}
+		catch(IOException e)
+		{
+			boardFrameTitle = "?";
+		}
+		
+		boardFrame = new BoardFrame(board, solutionBuffer, boardFrameTitle, debug);
+	}
 	/**
 	 * Suspends the thread that is solving the board.
 	 * 
