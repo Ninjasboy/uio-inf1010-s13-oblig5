@@ -106,7 +106,7 @@ class BoardFrame extends JFrame implements ActionListener
 		nextSolutionButton = addNewButton("Next solution", buttonsPanel);
 		prevSolutionButton = addNewButton("Previous solution", buttonsPanel);
 
-		stepButton = addNewButton("Step", buttonsPanel);
+		stepButton = mode ? addNewButton("Step", buttonsPanel) : null;
 		
 		setVisible(true);
 	}

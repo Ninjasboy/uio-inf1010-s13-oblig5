@@ -41,7 +41,7 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	}
 
 	/** IDE-unassisted debugging mode switch. */
-	final boolean debug = false;
+	final boolean debug = true, useStepping = false;
 
 	/**
 	 * Whether to prefer AWT to Swing. AWT > Swing :-)
@@ -83,7 +83,7 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	 * Whether to delay interactive solving process on each square value tried.
 	 * Value of <code>-1</code> signifies that solving will not be delayed.
 	 */
-	final private long solveStepDelay = 100;
+	final private long solveStepDelay = 10;
 
 	/**
 	 * Create an application.
@@ -130,6 +130,26 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	 * Callback method.
 	 * 
 	 * Only used with IDE-unassisted debugging now. Is called when a value of a
+	 * square of a board is found to be invalid.
+	 * 
+	 * @param badValue The value that is found to be invalid.
+	 * @param square The board square that the value was tried for.
+	 */
+	@Override public void onSolverTryBoardValue(Board board, int tryValue,
+		int colIndex, int rowIndex)
+	{
+		if(debug)
+		{
+			boardFrame.updateSquare(colIndex, rowIndex, tryValue, Color.YELLOW);
+			
+			onStep();
+		}
+	}
+	
+	/**
+	 * Callback method.
+	 * 
+	 * Only used with IDE-unassisted debugging now. Is called when a value of a
 	 * square of a board is reset.
 	 * 
 	 * @param square The board square that has had its value reset.
@@ -140,9 +160,9 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	{
 		if(debug)
 		{
-			boardFrame.updateCurrent(colIndex, rowIndex, value);
+			boardFrame.updateSquare(colIndex, rowIndex, value, Color.GREEN);
 
-			suspendSolvingThread();	
+			onStep();	
 		}
 	}
 
@@ -162,7 +182,7 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 		{
 			boardFrame.updateSquare(colIndex, rowIndex, tryValue, Color.RED);
 			
-			suspendSolvingThread();
+			onStep();
 		}
 	}
 
@@ -244,7 +264,11 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 		if(debug)
 		{
 			createBoardFrame(board);
-			boardFrame.stepButton.setEnabled(true);
+			
+			if(useStepping)
+			{
+				boardFrame.stepButton.setEnabled(true);
+			}
 		}
 
 		solverThread.start();
@@ -379,6 +403,18 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 		finally
 		{
 			writer.close();
+		}
+	}
+	
+	private void onStep()
+	{
+		if(useStepping)
+		{
+			suspendSolvingThread();
+		}
+		else
+		{
+			solveDelay();
 		}
 	}
 	

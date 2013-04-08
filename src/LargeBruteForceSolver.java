@@ -15,6 +15,8 @@ public class LargeBruteForceSolver
 {
 	interface EventListener
 	{
+		void onSolverTryBoardValue(Board board, int tryValue, int x, int y);
+		
 		void onBoardSolutionComplete(Board board, int[][] boardValueArray);
 
 		void onBoardSolvingBadValue(Board board, int tryValue, int x, int y);
@@ -41,6 +43,8 @@ public class LargeBruteForceSolver
 
 			for(int tryValue = boardValueArray[y][x] + 1; tryValue <= boardDimension; tryValue++)
 			{
+				eventListener.onSolverTryBoardValue(board, tryValue, x, y);
+				
 				if(isValidValue(tryValue, x, y, boardValueArray, board))
 				{
 					boardValueArray[y][x] = tryValue;
