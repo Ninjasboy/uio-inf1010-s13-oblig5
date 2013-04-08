@@ -35,39 +35,16 @@ class SolutionBuffer
 	/**
 	 * Take a snapshot of the board, i.e. all the values in the its squares.
 	 * 
-	 * @param board The board to add snapshot of as a solution. The parameter
-	 *        <code>board</code> may be superflous, since this buffer references
-	 *        the original board anyway, but is kept for posterity.
-	 */
-	void add(Board board)
-	{
-		assert board == this.board;
-
-		final int[][] boardValueArray =
-				new int[board.dimension][board.dimension];
-
-		for(int y = 0; y < board.dimension; y++)
-		{
-			for(int x = 0; x < board.dimension; x++)
-			{
-				boardValueArray[y][x] = board.value(x, y);
-			}
-		}
-
-		add(boardValueArray);
-	}
-
-	/**
-	 * Take a snapshot of the board, i.e. all the values in the its squares.
-	 * 
 	 * This method is an alternative version of the <code>add(Board
 	 * board)</code> method.
 	 * 
 	 * @param boardValueArray An array containing board values, row for row,
 	 *        column for column.
 	 */
-	void add(int[][] boardValueArray)
+	void addSnapshot(final int[][] boardValueArray)
 	{
+		assert noZeroValues(boardValueArray);
+		
 		if(size() == MAX_LIST_SIZE)
 		{
 			System.err
@@ -76,7 +53,7 @@ class SolutionBuffer
 			solutionList.remove(0);
 		}
 
-		solutionList.add(boardValueArray);
+		solutionList.add(boardValueArrayCopy(boardValueArray));
 	}
 
 	/**
@@ -100,5 +77,35 @@ class SolutionBuffer
 	int size()
 	{
 		return solutionList.size();
+	}
+	
+	boolean noZeroValues(int[][] a)
+	{		
+		for(int y = 0; y < a.length; y++)
+		{
+			for(int x = 0; x < a.length; x++)
+			{
+				if(a[y][x] == 0)
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	int[][] boardValueArrayCopy(final int[][] boardValueArray)
+	{
+	    final int boardDimension = boardValueArray.length;
+	    
+	    final int[][] boardValueArrayCopy = new int[boardDimension][boardDimension];
+	    
+	    for(int i = 0; i < boardDimension; i++)
+	    {
+	        System.arraycopy(boardValueArray[i], 0, boardValueArrayCopy[i], 0, boardDimension);
+	    }
+	    
+	    return boardValueArrayCopy;
 	}
 }

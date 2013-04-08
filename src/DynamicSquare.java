@@ -21,64 +21,13 @@ class DynamicSquare extends Square
 	}
 
 	/**
-	 * The entry point that recursively solves this boards value using the
-	 * so-called exhaustive ("brute force") approach.
-	 * 
-	 * @deprecated The squares should not contain methods that solve the board.
-	 *             I would argue that a separate solver object that implements a
-	 *             specific method of solving a Sudoku board takes care of the
-	 *             solving entirely.
-	 * 
-	 * @param eventListener An object that is notified under the solving
-	 *        process.
-	 */
-	@Deprecated void setNumberMeAndTheRest(Board.EventListener eventListener)
-	{
-		int tryValue;
-
-		for(tryValue = value + 1; tryValue <= board.dimension; tryValue++)
-		{
-			if(isValidValue(tryValue))
-			{
-				setValue(tryValue, eventListener);
-
-				DynamicSquare nextDynamicSquare = board.nextDynamicSquare(this);
-
-				if(nextDynamicSquare == null)
-				{
-					/**
-					 * This and all previous square have now a valid value each.
-					 * There are no more squares, so we have a solution on our
-					 * hands.
-					 */
-					eventListener.onBoardSolutionComplete(board);
-				}
-				else
-				{
-					nextDynamicSquare.setNumberMeAndTheRest(eventListener);
-				}
-			}
-			else
-			{
-				eventListener.onSolvingBadSquareValue(tryValue, this);
-			}
-		}
-
-		/**
-		 * No more squares or no valid values for this square. Clear the value
-		 * and try another value for the previous square again.
-		 */
-		setValue(0, eventListener);
-	}
-
-	/**
 	 * Resets the value of this square to specified value and sends a
 	 * notification using the specified event listener object.
 	 * 
 	 * @param newValue New value of this square to set to.
 	 * @param eventListener The object to notify of value reset.
 	 */
-	private void setValue(int newValue, Board.EventListener eventListener)
+	private void setValue2(int newValue, Board.EventListener eventListener)
 	{
 		this.value = newValue;
 

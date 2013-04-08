@@ -49,19 +49,14 @@ class SolutionBufferWriter
 		writer.write(Integer.toString(index + 1) + ": "); //$NON-NLS-1$
 
 		final int[][] data = solutionBuffer.get(index);
-
+		
 		for(int y = 0; y < data.length; y++)
 		{
 			for(int x = 0; x < data.length; x++)
 			{
-				int value = data[y][x];
-
-				if(value == 0)
-				{
-					value = solutionBuffer.board.value(x, y);
-				}
-
-				writer.write(solutionBuffer.board.charFromSquareValue(value));
+				assert data[y][x] != 0;
+				
+				writer.write(solutionBuffer.board.charFromSquareValue(data[y][x]));
 			}
 
 			writer.write("// "); //$NON-NLS-1$

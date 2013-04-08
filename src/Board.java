@@ -233,30 +233,11 @@ class Board
 	/* int value(int colIndex, int rowIndex) { return
 	 * squares[rowIndex][colIndex].value; } */
 
-	/**
-	 * Initiates the solving sequence for this board.
-	 * 
-	 * Causes notification of the event listener under the solving.
-	 * 
-	 * @deprecated The board should not contain methods like solving itself,
-	 *             this does not play well with principles of good object
-	 *             oriented system design. This is left to only comply with task
-	 *             specification.
-	 * 
-	 * @return
-	 */
-	@Deprecated void solve(EventListener eventListener)
-	{
-		firstDynamicSquare(0, 0).setNumberMeAndTheRest(eventListener);
-
-		eventListener.onBoardAllSolutionsComplete(this);
-	}
-
 	char charFromSquareValue(int value)
 	{
 		if(value < 1 || value > 36)
 		{
-			throw new IndexOutOfBoundsException("Value out of range.");
+			throw new IndexOutOfBoundsException("Value " + value + " out of range.");
 		}
 
 		return (value < 36) ? ((char)((value < 10) ? (value + 48)

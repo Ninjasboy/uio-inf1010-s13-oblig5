@@ -23,5 +23,5 @@ public class Utils
 	public static void writeNewLine(Writer writer) throws IOException
 	{
 		writer.write(newLine);
-	}
+	}	
 }
