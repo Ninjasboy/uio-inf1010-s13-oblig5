@@ -23,7 +23,7 @@ import java.awt.Color;
  * by the second argument.
  * 
  */
-class Application implements Board.EventListener
+class Application implements Board.EventListener, BoardFrame.EventListener
 {
 	/**
 	 * Entry point of the application.
@@ -60,6 +60,10 @@ class Application implements Board.EventListener
 	/** Board frame that this application creates for displaying the board. */
 	private BoardFrame boardFrame;
 
+	final private String solutionFileSpec;
+
+	private SolutionBufferWriter solutionBufferWriter;
+
 	/** File to write solution buffer to, if any. */
 	private File solutionFile;
 
@@ -79,7 +83,7 @@ class Application implements Board.EventListener
 	 * Whether to delay interactive solving process on each square value tried.
 	 * Value of <code>-1</code> signifies that solving will not be delayed.
 	 */
-	final private long solveStepDelay = -1;
+	final private long solveStepDelay = 100;
 
 	/**
 	 * Create an application.
@@ -98,9 +102,11 @@ class Application implements Board.EventListener
 	 * @throws FileNotFoundException The file to load the board from was not
 	 *         found.
 	 */
-	Application(String boardFilePath, String solutionBufferFilePath)
+	Application(String boardFilePath, String solutionFileSpec)
 		throws FileNotFoundException, IOException
 	{
+		this.solutionFileSpec = solutionFileSpec;
+
 		if(boardFilePath != null)
 		{
 			boardFile = new File(boardFilePath);
@@ -116,11 +122,6 @@ class Application implements Board.EventListener
 		}
 
 		board = loadBoardFromFile();
-
-		if(solutionBufferFilePath != null)
-		{
-			solutionFile = new File(solutionBufferFilePath);
-		}
 
 		startSolvingBoard();
 	}
@@ -140,17 +141,7 @@ class Application implements Board.EventListener
 		{
 			boardFrame.updateAsCurrentSquare(square);
 
-			if(solveStepDelay >= 0)
-			{
-				try
-				{
-					Thread.sleep(solveStepDelay);
-				}
-				catch(InterruptedException e)
-				{
-					throw new RuntimeException(e);
-				}
-			}
+			suspendSolvingThread();	
 		}
 	}
 
@@ -163,18 +154,13 @@ class Application implements Board.EventListener
 	 * @param badValue The value that is found to be invalid.
 	 * @param square The board square that the value was tried for.
 	 */
-	@Override public void onSolvingBadSquareValue(int badValue,
-		DynamicSquare square)
+	@Override public void onSolvingBadSquareValue(int badValue, DynamicSquare square)
 	{
 		if(debug)
 		{
 			boardFrame.updateSquare(square, badValue, Color.RED);
-
-			/* try { Thread.sleep(10); } catch(InterruptedException e) {
-			 * 
-			 * } */
-
-			// suspendSolvingThread();
+			
+			suspendSolvingThread();
 		}
 	}
 
@@ -187,8 +173,7 @@ class Application implements Board.EventListener
 	 */
 	@Override public void onBoardSolutionComplete(Board board)
 	{
-		solutionBuffer.add(board);
-		/* System.err.println("Added a solution to the solution buffer."); */
+		solutionBuffer.addSnapshot(board);
 	}
 
 	/**
@@ -200,7 +185,7 @@ class Application implements Board.EventListener
 	 */
 	@Override public void onBoardAllSolutionsComplete(Board board)
 	{
-		if(solutionFile == null)
+		if(solutionFileSpec == null)
 		{
 			if(boardFrame == null)
 			{
@@ -214,10 +199,22 @@ class Application implements Board.EventListener
 		}
 		else
 		{
-			saveSolutions();
+			try
+			{
+				saveSolutions();
+			}
+			catch(IOException e)
+			{
+				throw new RuntimeException("Couldn't save solutions.", e);
+			}
 		}
 	}
 
+	@Override public void onStepButtonClicked()
+	{
+		resumeSolvingThread();
+	}
+	
 	/**
 	 * Initiates solving process by starting a solving thread which will
 	 * progress in parallel with the calling execution process.
@@ -241,6 +238,7 @@ class Application implements Board.EventListener
 		if(debug)
 		{
 			createBoardFrame(board);
+			boardFrame.stepButton.setEnabled(true);
 		}
 
 		solverThread.start();
@@ -262,7 +260,7 @@ class Application implements Board.EventListener
 		}
 
 		boardFrame =
-			new BoardFrame(board, solutionBuffer, boardFrameTitle, debug);
+			new BoardFrame(board, solutionBuffer, boardFrameTitle, debug, this);
 	}
 
 	/**
@@ -346,53 +344,50 @@ class Application implements Board.EventListener
 
 	/**
 	 * Procedure to save the solution buffer to the solutions file or stdout.
+	 * 
+	 * The resource leak warning is a false positive - the <code>writer</code>
+	 * is always closed because it is enclosed in a <code>finally</code> block.
+	 * 
+	 * @throws IOException An I/O error occurs while writing solution buffer.
 	 */
-	void saveSolutions()
+	void saveSolutions() throws IOException
 	{
-
-		if(solutionFile == null)
+		assert solutionFileSpec != null;
+		assert solutionFile == null;
+		
+		if(!solutionFileSpec.equals("-"))
 		{
-			solutionFile = chooseFileDialog("Save board solution buffer", true);
-
-			if(solutionFile == null)
-			{
-				/** Saving simply aborted. */
-				return;
-			}
+			solutionFile = new File(solutionFileSpec);
 		}
+		
+		Writer writer =
+			(solutionFileSpec.equals("-")) ? (new OutputStreamWriter(System.out))
+				: (new BufferedWriter(new FileWriter(solutionFile)));
 
-		// System.err.println("Writing solution buffer.");
+		solutionBufferWriter = new SolutionBufferWriter(writer);
 
 		try
 		{
-			Writer writer = null;
-
-			if(solutionFile != null)
-			{
-				writer = new BufferedWriter(new FileWriter(solutionFile));
-
-			}
-			else
-			{
-				writer = new OutputStreamWriter(System.out);
-			}
-
-			SolutionBufferWriter solutionBufferWriter =
-				new SolutionBufferWriter(writer);
-
 			solutionBufferWriter.write(solutionBuffer);
-
+		}
+		finally
+		{
 			writer.close();
 		}
-		catch(IOException e)
-		{
-			System.err.println("Could not save board solution buffer to file.");
-			e.printStackTrace();
-		}
 	}
-
-	void onClickStepButton()
+	
+	private void solveDelay()
 	{
-		resumeSolvingThread();
+		if(solveStepDelay >= 0)
+		{
+			try
+			{
+				Thread.sleep(solveStepDelay);
+			}
+			catch(InterruptedException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 	}
 }

@@ -24,6 +24,11 @@ import java.awt.event.ActionEvent;
  */
 class BoardFrame extends JFrame implements ActionListener
 {
+	interface EventListener
+	{
+		void onStepButtonClicked();
+	}
+	
 	/** Size of the margin for the action buttons */
 	static final int BUTTONS_MARGIN_SIZE = 50;
 
@@ -44,10 +49,7 @@ class BoardFrame extends JFrame implements ActionListener
 
 	/** Action buttons */
 	final JButton nextSolutionButton,
-		prevSolutionButton/* , saveSolutionsButton */;
-
-	/** Only when debug mode is set. */
-	private JButton stepButton;
+		prevSolutionButton, stepButton/* , saveSolutionsButton */;
 
 	/** Font for the non-user-modifiable board squares. */
 	private Font staticSquareTextFont;
@@ -58,6 +60,8 @@ class BoardFrame extends JFrame implements ActionListener
 	/** When board is being solved, this tracks last updated square view. */
 	private JTextField lastTextField;
 
+	private EventListener eventListener;
+	
 	/**
 	 * Creates a board frame that is linked to a board solution buffer.
 	 * 
@@ -69,13 +73,14 @@ class BoardFrame extends JFrame implements ActionListener
 	 * @param oblig3 A parent GUI to use for event propagation.
 	 */
 	BoardFrame(Board board, SolutionBuffer solutionBuffer, String title,
-		boolean mode)
+		boolean mode, EventListener eventListener)
 	{
 		this.title = title;
 		this.board = board;
 		this.solutionBuffer = solutionBuffer;
 		this.mode = mode;
-
+		this.eventListener = eventListener;
+		
 		Font defaultFont = UIManager.getFont("TextField.font"); //$NON-NLS-1$
 
 		staticSquareTextFont =
@@ -100,7 +105,8 @@ class BoardFrame extends JFrame implements ActionListener
 
 		nextSolutionButton = addNewButton("Next solution", buttonsPanel);
 		prevSolutionButton = addNewButton("Previous solution", buttonsPanel);
-
+		stepButton = addNewButton("Step", buttonsPanel);
+		
 		// saveSolutionsButton = addNewButton("Save solutions", buttonsPanel);
 
 		setVisible(true);

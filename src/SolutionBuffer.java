@@ -39,7 +39,7 @@ class SolutionBuffer
 	 *        <code>board</code> may be superflous, since this buffer references
 	 *        the original board anyway, but is kept for posterity.
 	 */
-	void add(Board board)
+	void addSnapshot(Board board)
 	{
 		assert board == this.board;
 
