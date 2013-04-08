@@ -2,26 +2,33 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * Writes the solution buffer.
+ * A solution buffer writer.
  * 
- * Uses a specific file format.
- * 
- * @author armenmi
- * 
+ * Writes solution set to a text file in a particular format.
  */
 class SolutionBufferWriter
 {
+	/**
+	 * Writer to use.
+	 */
 	final private Writer writer;
 
+	/**
+	 * Creates a solution buffer writer that uses the specified writer object.
+	 * 
+	 * @param writer Writer to use.
+	 */
 	SolutionBufferWriter(Writer writer)
 	{
 		this.writer = writer;
 	}
 
 	/**
-	 * Writes a solution buffer using the writer.
+	 * Writes a solution buffer.
+	 * 
+	 * @throws IOException An I/O error occurs during writing.
 	 */
-	void write(SolutionBuffer solutionBuffer) throws IOException
+	public void write(SolutionBuffer solutionBuffer) throws IOException
 	{
 		for(int i = 0; i < solutionBuffer.size(); i++)
 		{
@@ -30,17 +37,15 @@ class SolutionBufferWriter
 	}
 
 	/**
-	 * Writes a single solution.
+	 * Writes a single solution specified by its index.
 	 * 
-	 * @param data buffer of values (usually returned by SudokuBuffer.get.
+	 * @param solutionBuffer The solution container.
 	 * @param index Index of the solution to use.
-	 * @throws IOException
+	 * @throws IOException An I/O error occurs during writing.
 	 */
-	void writeSolution(SolutionBuffer solutionBuffer, int index)
+	private void writeSolution(SolutionBuffer solutionBuffer, int index)
 			throws IOException
 	{
-		// System.err.println("Writing solution #" + (index + 1));
-
 		writer.write(Integer.toString(index + 1) + ": "); //$NON-NLS-1$
 
 		final int[][] data = solutionBuffer.get(index);

@@ -1,13 +1,43 @@
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 
 /**
- * Implements loading of Sudoku boards from file.
+ * A board loader.
+ * 
+ * Objects of this class load a board object using a <code>Reader</code> as
+ * input stream provider.
  */
 class BoardFileLoader
 {
+	/**
+	 * Represents a condition of invalid or suspicious input.
+	 */
+	public class InputFormatException extends RuntimeException
+	{
+		final private Reader reader;
+
+		InputFormatException(String message, Reader reader)
+		{
+			super(message);
+
+			this.reader = reader;
+		}
+
+		InputFormatException(Throwable cause, Reader reader)
+		{
+			super(cause);
+
+			this.reader = reader;
+		}
+	}
+	
+	/**
+	 * Obtain board element value given a character.
+	 * 
+	 * @param c Character to obtain the value of.
+	 * @return Value of the character provided.
+	 */
 	static int valueFromChar(char c)
 	{
 		if(c >= '1' && c <= '9')
@@ -27,75 +57,56 @@ class BoardFileLoader
 	}
 
 	/**
-	 * Loads a board from a file.
+	 * Load a board using a <code>Reader</code>.
 	 * 
-	 * @param file File with the board data
+	 * @param input A reader to use for reading input from.
 	 * @return A Board object with loaded values.
 	 * @throws IOException If an error occurs during doing file I/O
-	 * @throws Exception If file data is in an invalid format during loading.
 	 */
-	Board boardFromFile(File file) throws IOException, Exception
-	{		
-		BufferedReader reader = new BufferedReader(new FileReader(file));
-
+	Board loadBoard(Reader input) throws IOException
+	{
+		final BufferedReader reader = (input instanceof BufferedReader) ? ((BufferedReader)input) : (new BufferedReader(input));
+		
 		try
 		{
-			// / Parse header
+			/** Parse header. */	
+			final int dimension = Integer.parseInt(reader.readLine());
+			final int boxHeight = Integer.parseInt(reader.readLine());
+			final int boxWidth = Integer.parseInt(reader.readLine());
 
-			int dimension = Integer.parseInt(reader.readLine());
-			int boxHeight = Integer.parseInt(reader.readLine());
-			int boxWidth = Integer.parseInt(reader.readLine());
-
-			int[][] boardData = new int[dimension][dimension];
+			final int[][] boardData = new int[dimension][dimension];
 
 			for(int y = 0; y < dimension; y++)
 			{
-				String line = null;
-
-				line = reader.readLine();
+				String line = reader.readLine();
 
 				if(line == null)
 				{
-					throw new Exception("File corrupt.");
+					throw new InputFormatException("Line of input expected here.", reader);
 				}
-
+								
 				if(line.length() != dimension)
 				{
-					throw new Exception("File corrupt.");
+					throw new InputFormatException("Wrong number of characters in input line.", reader);
 				}
 
 				for(int x = 0; x < dimension; x++)
 				{
-					char c = line.charAt(x);
+					final char c = line.charAt(x);
 
-					int value;
-
-					if(c == '.')
-					{
-						value = 0;
+					try
+					{						
+						boardData[y][x] = (c == '.') ? 0 : valueFromChar(c);
 					}
-					else
+					catch(IllegalArgumentException e)
 					{
-						try
-						{
-							value = valueFromChar(c);
-						}
-						catch(IllegalArgumentException e)
-						{
-							throw new RuntimeException("File corrupt.", e);
-						}
+						throw new InputFormatException(e, reader);
 					}
-
-					boardData[y][x] = value;
 				}
 			}
 
-			return Board.boardFromArray(
-					dimension,
-					boxWidth,
-					boxHeight,
-					boardData,
-					file.getPath());
+			return Board.boardFromArray(dimension, boxWidth, boxHeight,
+				boardData);
 		}
 		finally
 		{

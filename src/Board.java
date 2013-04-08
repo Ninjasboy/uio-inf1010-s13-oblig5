@@ -10,6 +10,11 @@
  */
 class Board
 {
+	/**
+	 * Event listener for board solving process.
+	 * 
+	 * Is notified under solving process of various relevant events.
+	 */
 	interface EventListener
 	{
 		void onBoardSolutionComplete(Board board);
@@ -29,10 +34,9 @@ class Board
 	 * @param boxHeight Height of each box in the board
 	 * @return a new Board object.
 	 */
-	static Board emptyBoard(int dimension, int boxWidth, int boxHeight,
-			String title)
+	static Board emptyBoard(int dimension, int boxWidth, int boxHeight)
 	{
-		Board board = new Board(dimension, boxWidth, boxHeight, title);
+		Board board = new Board(dimension, boxWidth, boxHeight);
 
 		for(int y = 0; y < board.dimension; y++)
 		{
@@ -57,33 +61,23 @@ class Board
 	 * @return A new board object
 	 */
 	static Board boardFromArray(int dimension, int boxWidth, int boxHeight,
-			int[][] boardData, String title)
+		int[][] boardData)
 	{
-		Board board = new Board(dimension, boxWidth, boxHeight, title);
+		Board board = new Board(dimension, boxWidth, boxHeight);
 
 		for(int y = 0; y < board.dimension; y++)
 		{
 			for(int x = 0; x < board.dimension; x++)
 			{
-
 				board.squares[y][x] =
-						(boardData[y][x] != 0) ? new StaticSquare(
-								boardData[y][x], x, y, board)
-								: new DynamicSquare(x, y,
-										board);
+					(boardData[y][x] != 0)
+						? new StaticSquare(boardData[y][x], x, y, board)
+						: new DynamicSquare(x, y, board);						
 			}
 		}
 
 		return board;
 	}
-
-	/**
-	 * An object that has its methods called when changes to the board occur.
-	 */
-	public EventListener eventListener;
-
-	/** Some form of a title for this board. */
-	public final String title;
 
 	/** Dimension of this board. */
 	public final int dimension;
@@ -98,16 +92,16 @@ class Board
 	 * An array of N arrays, each of M squares, where N is amount of rows and M
 	 * is amount of columns in this board.
 	 */
-	private final Square[][] squares;
+	final private Square[][] squares;
 
 	/** Array of rows in this board. */
-	private final Row[] rows;
+	final private Row[] rows;
 
 	/** Array of columns in this board. */
-	private final Column[] cols;
+	final private Column[] cols;
 
 	/** Array of boxes in this board. */
-	private final Box[] boxes;
+	final private Box[][] boxes;
 
 	/**
 	 * Creates a new board of specified dimensions without squares.
@@ -116,16 +110,13 @@ class Board
 	 * @param boxWidth Width of each box in the board
 	 * @param boxHeight Height of each box in the board
 	 */
-	private Board(int dimension, int boxWidth, int boxHeight, String title)
+	private Board(int dimension, int boxWidth, int boxHeight)
 	{
 		/** Boxes must fit tightly into the board. */
-		if((dimension % boxWidth) != 0 ||
-				(dimension % boxHeight) != 0)
+		if((dimension % boxWidth) != 0 || (dimension % boxHeight) != 0)
 		{
 			throw new IllegalArgumentException();
 		}
-
-		this.title = title;
 
 		squares = new Square[dimension][dimension];
 
@@ -154,19 +145,42 @@ class Board
 
 		// / Create boxes
 
-		int nBoxes = (dimension / boxWidth) * (dimension / boxHeight);
+		boxes = new Box[dimension / boxHeight][dimension / boxWidth];
 
-		boxes = new Box[nBoxes];
-
-		int i = 0;
-
-		for(int y = 0; y < dimension; y += boxHeight)
+		for(int y = 0; y < boxes.length; y++)
 		{
-			for(int x = 0; x < dimension; x += boxWidth)
+			for(int x = 0; x < boxes[y].length; x++)
 			{
-				boxes[i++] = new Box(x, y, x + boxWidth, y + boxHeight, this);
+				boxes[y][x] =
+					new Box(x * boxWidth, y * boxHeight, x * (boxWidth + 1), y
+						* (boxHeight + 1), this);
 			}
 		}
+	}
+
+	public int value(int colIndex, int rowIndex)
+	{
+		return square(colIndex, rowIndex).value();
+	}
+
+	public Square square(int colIndex, int rowIndex)
+	{
+		return squares[rowIndex][colIndex];
+	}
+
+	public Column column(int index)
+	{
+		return cols[index];
+	}
+
+	public Row row(int index)
+	{
+		return rows[index];
+	}
+
+	public Box box(int colIndex, int rowIndex)
+	{
+		return boxes[rowIndex / boxHeight][colIndex / boxWidth];
 	}
 
 	/**
@@ -177,8 +191,7 @@ class Board
 	 */
 	DynamicSquare nextDynamicSquare(Square square)
 	{
-
-		return firstDynamicSquare(square.colIndex + 1, square.rowIndex);
+		return firstDynamicSquare(square.column.index() + 1, square.row.index());
 	}
 
 	/**
@@ -214,37 +227,11 @@ class Board
 		return null;
 	}
 
-	final Row row(int index)
-	{
-		return rows[index];
-	}
+	/* Box box(int colIndex, int rowIndex) { return boxes[rowIndex / boxHeight *
+	 * (dimension / boxWidth) + colIndex / boxWidth]; } */
 
-	final Square[] rowSquares(int index)
-	{
-		return squares[index];
-	}
-
-	final Column col(int index)
-	{
-		return cols[index];
-	}
-
-	final Box box(int colIndex, int rowIndex)
-	{
-
-		return boxes[rowIndex / boxHeight * (dimension / boxWidth) + colIndex
-				/ boxWidth];
-	}
-
-	final Square square(int colIndex, int rowIndex)
-	{
-		return squares[rowIndex][colIndex];
-	}
-
-	final int value(int colIndex, int rowIndex)
-	{
-		return squares[rowIndex][colIndex].getValue();
-	}
+	/* int value(int colIndex, int rowIndex) { return
+	 * squares[rowIndex][colIndex].value; } */
 
 	/**
 	 * Initiates the solving sequence for this board.
@@ -258,9 +245,9 @@ class Board
 	 * 
 	 * @return
 	 */
-	@Deprecated void solve()
+	@Deprecated void solve(EventListener eventListener)
 	{
-		firstDynamicSquare(0, 0).setNumberMeAndTheRest();
+		firstDynamicSquare(0, 0).setNumberMeAndTheRest(eventListener);
 
 		eventListener.onBoardAllSolutionsComplete(this);
 	}
@@ -273,6 +260,6 @@ class Board
 		}
 
 		return (value < 36) ? ((char)((value < 10) ? (value + 48)
-				: (value + 55))) : '@';
+			: (value + 55))) : '@';
 	}
 }

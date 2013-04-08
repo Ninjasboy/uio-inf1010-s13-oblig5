@@ -1,51 +1,39 @@
 /**
- * Fra oppgaveteksten: "rute er den minste enheten og er navnet vi bruker om de
- * minste enhetene på brettet; feltet som det kan stå ett tall (eller en
- * bokstav) i."
- * 
- * @author armenmi
- * 
+ * Models a single square of a Sudoku board.
  */
-class Square
+abstract class Square
 {
-	public final int colIndex;
-	public final int rowIndex;
-	public final Board board;
-
-	protected int value;
+	/**
+	 * Row this square lies on.
+	 */
+	final public Row row;
+	/**
+	 * Column this square lies on.
+	 */
+	final public Column column;
+	/**
+	 * Box this square lies in.
+	 */
+	final public Box box;
+	/**
+	 * Sudoku board this square lies in.
+	 */
+	final public Board board;
 
 	/**
-	 * Creates a dynamic square at specified column and row, that is part of
-	 * specified board.
+	 * Create a square that lies on a particular column and row in a board.
 	 * 
-	 * @param colIndex Zero-based column index of the new square on the board.
-	 * @param rowIndex Zero-based row index of the new square on the board.
-	 * @param board The board that the new square is part of.
+	 * @param colIndex Zero-based column index of the square.
+	 * @param rowIndex Zero-based row index of the square.
+	 * @param board The board that the square is part of.
 	 */
 	Square(int colIndex, int rowIndex, Board board)
 	{
-		this.colIndex = colIndex;
-		this.rowIndex = rowIndex;
-		this.board = board;
+		this.column = board.column(colIndex);
+		this.row = board.row(rowIndex);
+		this.box = board.box(colIndex, rowIndex);		
+		this.board = board;		
 	}
-
-	int getValue()
-	{
-		return value;
-	}
-	
-	Row row()
-	{
-		return board.row(rowIndex);
-	}
-
-	Column col()
-	{
-		return board.col(colIndex);
-	}
-
-	Box box()
-	{
-		return board.box(colIndex, rowIndex);
-	}	
+		
+	abstract public int value();	
 }

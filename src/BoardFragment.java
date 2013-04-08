@@ -1,35 +1,37 @@
 /**
- * This class represents a rectangular fragment of a Sudoku board, be it an
- * entire row, column, or a box.
- * 
- * @author armenmi
- * 
+ * A rectangular fragment of a Sudoku board, be it an entire row, column, or a
+ * box.
  */
 class BoardFragment
 {
+	/** Index of the leftmost column in this fragment. */
+	final public int left;
 
-	final int left;
-	final int top;
-	final int right;
-	final int bottom;
-
-	final Board board;
+	/** Index of the topmost row in this fragment. */
+	final public int top;
 
 	/**
-	 * Creates a new board fragment object.
+	 * Index of the column immediately succeeding rightmost column in this
+	 * fragment.
+	 */
+	final public int right;
+
+	/** Index of the row immediately succeeding bottommost row in this fragment. */
+	final public int bottom;
+
+	/** The board that this fragment is part of. */
+	final public Board board;
+
+	/**
+	 * Create new board fragment object using specified edges.
 	 * 
-	 * @note <code>right</code>,<code>bottom</code> are not part of this board
-	 *       fragment.
-	 * 
-	 * @param left Column index of the leftmost square that is part of this
-	 *        board fragment.
-	 * @param top Row index of the topmost square that is part of this board
+	 * @param left Index of the leftmost column in the new fragment.
+	 * @param top Index of the topmost row in the new fragment.
+	 * @param right Index of the column succeeding rightmost column in the new
 	 *        fragment.
-	 * @param right Column index RIGHT OF THE EDGE of the rightmost square that
-	 *        is part of this board fragment.
-	 * @param bottom Row index UNDER THE EDGE of the bottom-most square that is
-	 *        part of this board fragment.
-	 * @param board The board that this fragment belongs to.
+	 * @param bottom Index of the row succeeding bottommost row in the new
+	 *        fragment.
+	 * @param board The board that the fragment is part of.
 	 */
 	BoardFragment(int left, int top, int right, int bottom, Board board)
 	{
@@ -42,11 +44,13 @@ class BoardFragment
 	}
 
 	/**
-	 * Checks whether a given value is valid within Sudoku rules - i.e. it is
-	 * not already present across this board fragment.
+	 * Check whether the specified value is a valid square value as far as
+	 * Sudoku rules are concerned. This naturally involves checking whether the
+	 * value is not duplicate across the row, column and the box that this
+	 * square lies on.
 	 * 
-	 * @param value A value to check for duplicates.
-	 * @return <code>true</code> if the value is valid, <code>false</code>
+	 * @param value The value to check for validity.
+	 * @return <code>true</code> if the value is accepted, <code>false</code>
 	 *         otherwise.
 	 */
 	boolean isValidValue(int value)
@@ -55,7 +59,7 @@ class BoardFragment
 		{
 			for(int x = left; x < right; x++)
 			{
-				if(board.square(x, y).getValue() == value)
+				if(board.value(x, y) == value)
 				{
 					return false;
 				}

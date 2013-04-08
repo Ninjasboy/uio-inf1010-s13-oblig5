@@ -2,24 +2,23 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * A class that includes useful methods.
- * 
- * @author armenmi
- * 
+ * A utility class for auxiliary methods.
  */
 public class Utils
 {
-
+	/**
+	 * Platform specific newline string of characters.
+	 */
 	static final String newLine = System.getProperty("line.separator"); //$NON-NLS-1$
 
 	/**
-	 * Aids in writing new lines into Writer streams.
+	 * Write newline string.
 	 * 
-	 * Alternative is using BufferedWriter but this is more generic and allows
-	 * to use its underlying superclass.
+	 * An alternative would be to use BufferedWriter but this is more generic
+	 * and allows to use its underlying superclass.
 	 * 
-	 * @param writer
-	 * @throws IOException
+	 * @param writer The writer to use to write newline.
+	 * @throws IOException If writing fails. @see Writer Writer class
 	 */
 	public static void writeNewLine(Writer writer) throws IOException
 	{

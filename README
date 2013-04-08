@@ -1,7 +1,9 @@
 This is my solution for mandatory assignment 5 in subject INF1010, Spring 2013, University of Oslo.
 
-The assignment deals with solvign a Sudoku board, usually read from file. It loads the board, applies a "brute-force" solving algorithm that records solutions, and finally presents the user with an interface to view the board and the solutions.
+The assignment deals with solvign a Sudoku board, usually read from file. It loads the board, applies a "brute-force" solving algorithm that records solutions (up to 500 most recent ones), and finally presents the user with an interface to view the board and the solutions.
 
 Deviations from assignment:
 
 1. 'add' instead of 'insert' for solution buffer. "Insert" implies insertion at a specified place, between two adjacent elements. As the solution is inserted at either end of the list, "adding" is a more appropriate term.
+
+2. When 500 solutions have been found, instead of just halting solving process and displaying the results, solution list is trimmed, and solving continues. No results are displayed until all solutions have been found (although not all will end up in the list)

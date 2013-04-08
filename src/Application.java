@@ -1,10 +1,11 @@
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-
 import java.awt.Color;
 
 /**
@@ -24,59 +25,81 @@ import java.awt.Color;
  */
 class Application implements Board.EventListener
 {
+	/**
+	 * Entry point of the application.
+	 * 
+	 * @param args Command line arguments, see class documentation.
+	 * @throws FileNotFoundException File to load the board from was not found.
+	 * @throws IOException An I/O error occurs while loading the board from
+	 *         file.
+	 */
 	public static void main(String[] args)
+		throws FileNotFoundException, IOException
 	{
-		if(args.length >= 2)
-		{
-			new Application(args[0], args[1]);
-		}
-		else if(args.length >= 1)
-		{
-			new Application(args[0], null);
-		}
-		else
-		{
-			new Application(null, null);
-		}
+		new Application((args.length >= 1) ? args[0] : null, (args.length >= 2)
+			? args[1] : null);
 	}
 
 	/** IDE-unassisted debugging mode switch. */
-	final boolean debug = true;
+	final boolean debug = false;
 
 	/**
-	 * Whether to prefer AWT to Swing. AWT > Swing :-). Say no to alien
-	 * invasion.
+	 * Whether to prefer AWT to Swing. AWT > Swing :-)
 	 * 
-	 * FYI, JVM on Apple Macs has native file dialogs when using AWT.
+	 * I have observed that on Mac OS X, AWT has native file dialogs while Swing
+	 * doesn't (didn't?).
 	 */
 	final boolean useAWT = true;
 
-	/** Board file that this application loads. */
+	/** Board file that this application loads board data from. */
 	private File boardFile;
+
 	/** Board that this application loads and displays. */
 	private Board board;
+
 	/** Board frame that this application creates for displaying the board. */
 	private BoardFrame boardFrame;
-	// /** File to write solution buffer to. */
+
+	/** File to write solution buffer to, if any. */
 	private File solutionFile;
+
 	/** Solution buffer object that holds all of the boards solutions. */
 	private SolutionBuffer solutionBuffer;
+
 	/**
-	 * Whether the solution solving thread is suspended. Used with
+	 * Marks whenever the solution solving thread is suspended. Used with
 	 * IDE-unassisted debugging.
 	 */
 	private boolean solverThreadSuspended;
 
+	/** The thread solving the board. */
+	private Thread solverThread;
+
 	/**
-	 * Semi-interactive version.
+	 * Whether to delay interactive solving process on each square value tried.
+	 * Value of <code>-1</code> signifies that solving will not be delayed.
+	 */
+	final private long solveStepDelay = -1;
+
+	/**
+	 * Create an application.
 	 * 
-	 * Will always load a board from a file. May or may not ask user to write
-	 * solutions to a file.
+	 * The application may load a board from file specified on command line or
+	 * let user choose a file using a GUI. Likewise, if the solution list output
+	 * file was specified on command line, it will save the solutions to the
+	 * specified file instead of displaying them with a GUI.
 	 * 
-	 * @param boardFilePath Path of board file to load
-	 * @param solutionBufferFilePath Path of solution file to write
+	 * @param boardFilePath Path of board file to load or <code>null</code> to
+	 *        let user choose one with a GUI.
+	 * @param solutionBufferFilePath Path of solution file to write or
+	 *        <code>null</code> to display solutions with a GUI.
+	 * @throws IOException An I/O error occurs while loading the board from
+	 *         file.
+	 * @throws FileNotFoundException The file to load the board from was not
+	 *         found.
 	 */
 	Application(String boardFilePath, String solutionBufferFilePath)
+		throws FileNotFoundException, IOException
 	{
 		if(boardFilePath != null)
 		{
@@ -85,19 +108,14 @@ class Application implements Board.EventListener
 		else
 		{
 			boardFile = chooseFileDialog("Load board from file", false);
-			
+
 			if(boardFile == null)
 			{
 				return;
 			}
 		}
 
-		if(boardFile == null && boardFilePath == null)
-		{
-			return;
-		}
-
-		loadBoardFromFile();
+		board = loadBoardFromFile();
 
 		if(solutionBufferFilePath != null)
 		{
@@ -114,23 +132,25 @@ class Application implements Board.EventListener
 	 * square of a board is reset.
 	 * 
 	 * @param square The board square that has had its value reset.
+	 * @throws InterruptedException
 	 */
 	@Override public void onResetBoardSquareValue(DynamicSquare square)
 	{
 		if(debug)
 		{
 			boardFrame.updateAsCurrentSquare(square);
-			
-			/*try
+
+			if(solveStepDelay >= 0)
 			{
-				Thread.sleep(10);
+				try
+				{
+					Thread.sleep(solveStepDelay);
+				}
+				catch(InterruptedException e)
+				{
+					throw new RuntimeException(e);
+				}
 			}
-			catch(InterruptedException e)
-			{
-				
-			}*/
-			
-			//suspendSolvingThread();
 		}
 	}
 
@@ -144,22 +164,17 @@ class Application implements Board.EventListener
 	 * @param square The board square that the value was tried for.
 	 */
 	@Override public void onSolvingBadSquareValue(int badValue,
-			DynamicSquare square)
+		DynamicSquare square)
 	{
 		if(debug)
 		{
 			boardFrame.updateSquare(square, badValue, Color.RED);
-			
-			/*try
-			{
-				Thread.sleep(10);
-			}
-			catch(InterruptedException e)
-			{
-				
-			}*/
-			
-			//suspendSolvingThread();
+
+			/* try { Thread.sleep(10); } catch(InterruptedException e) {
+			 * 
+			 * } */
+
+			// suspendSolvingThread();
 		}
 	}
 
@@ -181,22 +196,20 @@ class Application implements Board.EventListener
 	 * 
 	 * Is called when all of the boards solutions have been found.
 	 * 
-	 * @param board the board that has been solved.
+	 * @param board The board that has been solved.
 	 */
 	@Override public void onBoardAllSolutionsComplete(Board board)
 	{
-		/* System.err.println("All solutions have been found."); */
-
-		if(debug)
-		{
-			return;
-		}
-
 		if(solutionFile == null)
 		{
-			if(!debug)
+			if(boardFrame == null)
 			{
 				createBoardFrame(board);
+			}
+
+			if(solutionBuffer.size() > 0)
+			{
+				boardFrame.showBoardSolution(0);
 			}
 		}
 		else
@@ -205,26 +218,23 @@ class Application implements Board.EventListener
 		}
 	}
 
-	/** Package-private methods. */
-
 	/**
-	 * Initiates solving process by forking a solving thread.
+	 * Initiates solving process by starting a solving thread which will
+	 * progress in parallel with the calling execution process.
 	 * 
-	 * The board is set to notify this object of changes in model state. In
+	 * The application will be notified of events during solving process. In
 	 * IDE-unassisted debugging mode, the board view will be constructed and
 	 * updated during the solving process.
 	 */
 	void startSolvingBoard()
 	{
-		board.eventListener = this;
-
 		solutionBuffer = new SolutionBuffer(board);
 
-		Thread solverThread = new Thread()
+		solverThread = new Thread()
 		{
 			@Override public void run()
 			{
-				board.solve();
+				board.solve(Application.this);
 			}
 		};
 
@@ -239,9 +249,9 @@ class Application implements Board.EventListener
 	private void createBoardFrame(Board board)
 	{
 		assert board == this.board;
-		
+
 		String boardFrameTitle;
-		
+
 		try
 		{
 			boardFrameTitle = boardFile.getCanonicalPath();
@@ -250,9 +260,11 @@ class Application implements Board.EventListener
 		{
 			boardFrameTitle = "?";
 		}
-		
-		boardFrame = new BoardFrame(board, solutionBuffer, boardFrameTitle, debug);
+
+		boardFrame =
+			new BoardFrame(board, solutionBuffer, boardFrameTitle, debug);
 	}
+
 	/**
 	 * Suspends the thread that is solving the board.
 	 * 
@@ -306,24 +318,29 @@ class Application implements Board.EventListener
 	{
 		FileChooser fileChooser = new FileChooser(useAWT, title, isSaveDialog);
 
-		return fileChooser.getFile();
+		return fileChooser.file();
 	}
 
 	/**
-	 * Procedure that loads a board from the file used as a startup parameter.
+	 * Load a board from the file (specified on command line).
+	 * 
+	 * @throws IOException An I/O error occurs while loading board.
+	 * @throws FileNotFoundException The file to load the board from was not
+	 *         found.
 	 */
-	private void loadBoardFromFile()
+	private Board loadBoardFromFile() throws FileNotFoundException, IOException
 	{
-		BoardFileLoader loader = new BoardFileLoader();
+		final BoardFileLoader loader = new BoardFileLoader();
+
+		final FileReader fileReader = new FileReader(boardFile);
 
 		try
 		{
-			board = loader.boardFromFile(boardFile);
+			return loader.loadBoard(fileReader);
 		}
-		catch(Exception e)
+		finally
 		{
-			System.err.println("Could not load board from file.");
-			e.printStackTrace();
+			fileReader.close();
 		}
 	}
 
@@ -361,7 +378,7 @@ class Application implements Board.EventListener
 			}
 
 			SolutionBufferWriter solutionBufferWriter =
-					new SolutionBufferWriter(writer);
+				new SolutionBufferWriter(writer);
 
 			solutionBufferWriter.write(solutionBuffer);
 
@@ -373,7 +390,7 @@ class Application implements Board.EventListener
 			e.printStackTrace();
 		}
 	}
-	
+
 	void onClickStepButton()
 	{
 		resumeSolvingThread();
