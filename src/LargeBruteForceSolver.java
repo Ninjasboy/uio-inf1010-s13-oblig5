@@ -38,8 +38,8 @@ public class LargeBruteForceSolver
 
 		outerLoop: for(int i = 0;;)
 		{
-			int x = solvableSquares[i][0];
-			int y = solvableSquares[i][1];
+			final int x = solvableSquares[i][0];
+			final int y = solvableSquares[i][1];
 
 			for(int tryValue = boardValueArray[y][x] + 1; tryValue <= boardDimension; tryValue++)
 			{

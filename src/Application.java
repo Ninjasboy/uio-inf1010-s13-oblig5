@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Map;
 import java.awt.Color;
 
 /**
@@ -23,7 +24,8 @@ import java.awt.Color;
  * by the second argument.
  * 
  */
-class Application implements LargeBruteForceSolver.EventListener, BoardFrame.EventListener
+class Application implements LargeBruteForceSolver.EventListener,
+	BoardFrame.EventListener
 {
 	/**
 	 * Entry point of the application.
@@ -36,13 +38,47 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	public static void main(String[] args)
 		throws FileNotFoundException, IOException
 	{
-		new Application((args.length >= 1) ? args[0] : null, (args.length >= 2)
-			? args[1] : null);
+		new Application((args.length >= 1) ? (args[0].equals("-") ? null
+			: args[0]) : null, (args.length >= 2) ? args[1] : null);
 	}
 
-	/** IDE-unassisted debugging mode switch. */
-	final boolean debug = true, useStepping = false;
+	/**
+	 * IDE unassisted debugging support object.
+	 */
+	class Debug
+	{
+		final boolean interactiveSolving;
+		final boolean useStepping;
+		
+		/**
+		 * Whether to delay interactive solving process on each square value tried.
+		 * Value of <code>-1</code> signifies that solving will not be delayed.
+		 */
+		final int interactiveDelay;
+		
+		final boolean timeSolver;
+		
+		Debug(Map<String, String> env)
+		{		
+			interactiveSolving = dbgEnvBoolean("debug.interactiveSolving", env);
+			useStepping = dbgEnvBoolean("debug.interactiveSolving.useStepping", env);
+			interactiveDelay = dbgEnvInteger("debug.interactiveSolving.delay", env);
+			timeSolver = dbgEnvBoolean("debug.timeSolver", env);
+		}	
 
+		public boolean dbgEnvBoolean(String varName, Map<String, String> env)
+		{
+			return env.containsKey(varName) ? Boolean.parseBoolean(env.get(varName)) : false;
+		}
+		
+		public int dbgEnvInteger(String varName, Map<String, String> env)
+		{
+			return env.containsKey(varName) ? Integer.parseInt(env.get(varName)) : -1;
+		}
+	}
+	
+	final public Debug debug;
+	
 	/**
 	 * Whether to prefer AWT to Swing. AWT > Swing :-)
 	 * 
@@ -50,6 +86,8 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	 * doesn't (didn't?).
 	 */
 	final boolean useAWT = true;
+
+	final public String boardFileSpec;
 
 	/** Board file that this application loads board data from. */
 	private File boardFile;
@@ -60,7 +98,7 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	/** Board frame that this application creates for displaying the board. */
 	private BoardFrame boardFrame;
 
-	final private String solutionFileSpec;
+	final public String solutionFileSpec;
 
 	private SolutionBufferWriter solutionBufferWriter;
 
@@ -80,12 +118,6 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	private Thread solverThread;
 
 	/**
-	 * Whether to delay interactive solving process on each square value tried.
-	 * Value of <code>-1</code> signifies that solving will not be delayed.
-	 */
-	final private long solveStepDelay = 10;
-
-	/**
 	 * Create an application.
 	 * 
 	 * The application may load a board from file specified on command line or
@@ -102,16 +134,16 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	 * @throws FileNotFoundException The file to load the board from was not
 	 *         found.
 	 */
-	Application(String boardFilePath, String solutionFileSpec)
+	Application(String boardFileSpec, String solutionFileSpec)
 		throws FileNotFoundException, IOException
 	{
+		debug = new Debug(System.getenv());
+		
 		this.solutionFileSpec = solutionFileSpec;
 
-		if(boardFilePath != null)
-		{
-			boardFile = new File(boardFilePath);
-		}
-		else
+		this.boardFileSpec = boardFileSpec;
+
+		if(boardFileSpec == null)
 		{
 			boardFile = chooseFileDialog("Load board from file", false);
 
@@ -119,6 +151,10 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 			{
 				return;
 			}
+		}
+		else
+		{
+			boardFile = new File(boardFileSpec);
 		}
 
 		board = loadBoardFromFile();
@@ -138,14 +174,14 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	@Override public void onSolverTryBoardValue(Board board, int tryValue,
 		int colIndex, int rowIndex)
 	{
-		if(debug)
+		if(debug.interactiveSolving)
 		{
 			boardFrame.updateSquare(colIndex, rowIndex, tryValue, Color.YELLOW);
-			
+
 			onStep();
 		}
 	}
-	
+
 	/**
 	 * Callback method.
 	 * 
@@ -158,11 +194,11 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	@Override public void onResetBoardValue(Board board, int value,
 		int colIndex, int rowIndex)
 	{
-		if(debug)
+		if(debug.interactiveSolving)
 		{
 			boardFrame.updateSquare(colIndex, rowIndex, value, Color.GREEN);
 
-			onStep();	
+			onStep();
 		}
 	}
 
@@ -178,10 +214,10 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	@Override public void onBoardSolvingBadValue(Board board, int tryValue,
 		int colIndex, int rowIndex)
 	{
-		if(debug)
+		if(debug.interactiveSolving)
 		{
 			boardFrame.updateSquare(colIndex, rowIndex, tryValue, Color.RED);
-			
+
 			onStep();
 		}
 	}
@@ -237,7 +273,7 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	{
 		resumeSolvingThread();
 	}
-	
+
 	/**
 	 * Initiates solving process by starting a solving thread which will
 	 * progress in parallel with the calling execution process.
@@ -257,15 +293,22 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 				final LargeBruteForceSolver solver =
 					new LargeBruteForceSolver();
 
+				final long startSolvingTS = System.nanoTime();
+				
 				solver.solve(board, Application.this);
+				
+				if(Application.this.debug.timeSolver)
+				{
+					System.err.println("Solving took " + (int)((System.nanoTime() - startSolvingTS) / 1000 / 1000) + " milliseconds.");
+				}
 			}
 		};
 
-		if(debug)
+		if(debug.interactiveSolving)
 		{
 			createBoardFrame(board);
-			
-			if(useStepping)
+
+			if(debug.useStepping)
 			{
 				boardFrame.stepButton.setEnabled(true);
 			}
@@ -384,14 +427,15 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 	{
 		assert solutionFileSpec != null;
 		assert solutionFile == null;
-		
+
 		if(!solutionFileSpec.equals("-"))
 		{
 			solutionFile = new File(solutionFileSpec);
 		}
-		
+
 		Writer writer =
-			(solutionFileSpec.equals("-")) ? (new OutputStreamWriter(System.out))
+			(solutionFileSpec.equals("-"))
+				? (new OutputStreamWriter(System.out))
 				: (new BufferedWriter(new FileWriter(solutionFile)));
 
 		solutionBufferWriter = new SolutionBufferWriter(writer);
@@ -405,10 +449,10 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 			writer.close();
 		}
 	}
-	
+
 	private void onStep()
 	{
-		if(useStepping)
+		if(debug.useStepping)
 		{
 			suspendSolvingThread();
 		}
@@ -417,14 +461,14 @@ class Application implements LargeBruteForceSolver.EventListener, BoardFrame.Eve
 			solveDelay();
 		}
 	}
-	
+
 	private void solveDelay()
 	{
-		if(solveStepDelay >= 0)
+		if(debug.interactiveDelay >= 0)
 		{
 			try
 			{
-				Thread.sleep(solveStepDelay);
+				Thread.sleep(debug.interactiveDelay);
 			}
 			catch(InterruptedException e)
 			{

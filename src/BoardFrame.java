@@ -32,8 +32,11 @@ class BoardFrame extends JFrame implements ActionListener
 	/** Size of the margin for the action buttons */
 	static final int BUTTONS_MARGIN_SIZE = 50;
 
+	/** Background painting color for immutable board squares. */
+	static final Color staticSquareBgColor = new Color(0xd0d0d0);
+
 	/** Whether this frame is put into interactive debugging mode. */
-	final public boolean mode;
+	final public Application.Debug debug;
 
 	/** The board displayed in this frame. */
 	final public Board board;
@@ -73,12 +76,12 @@ class BoardFrame extends JFrame implements ActionListener
 	 * @param oblig3 A parent GUI to use for event propagation.
 	 */
 	BoardFrame(Board board, SolutionBuffer solutionBuffer, String title,
-		boolean mode, EventListener eventListener)
+		Application.Debug debug, EventListener eventListener)
 	{
 		this.title = title;
 		this.board = board;
 		this.solutionBuffer = solutionBuffer;
-		this.mode = mode;
+		this.debug = debug;
 		this.eventListener = eventListener;
 
 		Font defaultFont = UIManager.getFont("TextField.font"); //$NON-NLS-1$
@@ -106,7 +109,7 @@ class BoardFrame extends JFrame implements ActionListener
 		nextSolutionButton = addNewButton("Next solution", buttonsPanel);
 		prevSolutionButton = addNewButton("Previous solution", buttonsPanel);
 
-		stepButton = mode ? addNewButton("Step", buttonsPanel) : null;
+		stepButton = debug.useStepping ? addNewButton("Step", buttonsPanel) : null;
 		
 		setVisible(true);
 	}
@@ -117,7 +120,7 @@ class BoardFrame extends JFrame implements ActionListener
 	 */
 	@Override public void actionPerformed(ActionEvent event)
 	{
-		Object eventSource = event.getSource();
+		final Object eventSource = event.getSource();
 
 		if(eventSource == nextSolutionButton)
 		{
@@ -133,6 +136,12 @@ class BoardFrame extends JFrame implements ActionListener
 		}
 	}
 
+	public String squareText(int value)
+	{
+		return (value != 0) ? String.valueOf(board.charFromSquareValue(value))
+			: "";
+	}
+
 	/**
 	 * Updates the view with the solution specified by its ID.
 	 * 
@@ -143,16 +152,9 @@ class BoardFrame extends JFrame implements ActionListener
 	 */
 	void showBoardSolution(int showSolutionID)
 	{
-		int[][] boardData = solutionBuffer.get(showSolutionID);
+		int[][] boardValueArray = solutionBuffer.get(showSolutionID);
 
-		for(int y = 0; y < board.dimension; y++)
-		{
-			for(int x = 0; x < board.dimension; x++)
-			{
-				squareTextFields[y][x].setBackground(Color.WHITE);
-				squareTextFields[y][x].setText(squareText(boardData[y][x]));
-			}
-		}
+		drawBoard(boardValueArray);
 
 		solutionID = showSolutionID;
 
@@ -164,6 +166,17 @@ class BoardFrame extends JFrame implements ActionListener
 		setTitle(title + " " + (solutionID + 1) + "/" + solutionCount); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
+	private void drawBoard(int[][] boardValueArray)
+	{
+		for(int y = 0; y < board.dimension; y++)
+		{
+			for(int x = 0; x < board.dimension; x++)
+			{
+				squareTextFields[y][x].setText(squareText(boardValueArray[y][x]));
+			}
+		}		
+	}
+	
 	/**
 	 * Repaint square to indicate it is being 'solved' by the solving process.
 	 * 
@@ -212,19 +225,13 @@ class BoardFrame extends JFrame implements ActionListener
 		lastTextField = textField;
 	}
 
-	public String squareText(int value)
-	{
-		return (value != 0) ? String.valueOf(board.charFromSquareValue(value))
-			: "";
-	}
-
 	/**
 	 * Create the view of the board, with typical Sudoku visual style.
 	 * 
 	 * @return The <code>JPanel</code> object that has been created.
 	 */
 	private JPanel createBoardView()
-	{
+	{		
 		JPanel squareTextFieldsPanel = new JPanel();
 
 		squareTextFieldsPanel
@@ -258,7 +265,7 @@ class BoardFrame extends JFrame implements ActionListener
 
 				if(square instanceof StaticSquare)
 				{
-					squareTextField.setBackground(Color.GRAY);
+					squareTextField.setBackground(staticSquareBgColor);
 					squareTextField.setFont(staticSquareTextFont);
 					squareTextField.setText(squareText(square.value()));
 				}
