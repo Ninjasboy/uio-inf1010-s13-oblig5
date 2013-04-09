@@ -115,15 +115,8 @@ public class LargeBruteForceSolver
 
 		for(int i = 0; i < boardValueArray.length; i++)
 		{
-			if(boardValueArray[y][i] == tryValue)
-			{
-				return false;
-			}
-		}
-
-		for(int i = 0; i < boardValueArray.length; i++)
-		{
-			if(boardValueArray[i][x] == tryValue)
+			if(	boardValueArray[y][i] == tryValue ||
+				boardValueArray[i][x] == tryValue)
 			{
 				return false;
 			}
