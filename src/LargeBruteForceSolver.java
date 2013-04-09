@@ -26,16 +26,47 @@ public class LargeBruteForceSolver
 		void onResetBoardValue(Board board, int value, int x, int y);
 	}
 
+	class Box
+	{
+		/** Right and bottom are edges beyond this box. */
+		final int left, top, right, bottom;
+		
+		Box(int left, int top, int width, int height)
+		{
+			this.left = left;
+			this.top = top;
+			this.right = left + width;
+			this.bottom = top + height;
+		}
+		
+		boolean isValidValue(int tryValue, int[][] boardValueArray)
+		{
+			for(int i = top; i < bottom; i++)
+			{
+				for(int j = left; j < right; j++)
+				{
+					if(boardValueArray[i][j] == tryValue)
+					{
+						return false;
+					}
+				}
+			}
+			
+			return true;
+		}
+	}
 	public void solve(Board board, EventListener eventListener)
 	{
 		final int boardDimension = board.dimension, boardSize =
 			board.dimension * board.dimension;
 
-		int[][] boardValueArray = new int[boardDimension][boardDimension];
-		int[][] solvableSquares = new int[boardSize][2];
+		final int[][] boardValueArray = new int[boardDimension][boardDimension];
+		final int[][] solvableSquares = new int[boardSize][2];
 
 		loadBoardData(board, boardValueArray, solvableSquares);
-
+		
+		final Box[][] boxMap = newBoxMap(board);
+				
 		outerLoop: for(int i = 0;;)
 		{
 			final int x = solvableSquares[i][0];
@@ -45,7 +76,7 @@ public class LargeBruteForceSolver
 			{
 				eventListener.onSolverTryBoardValue(board, tryValue, x, y);
 				
-				if(isValidValue(tryValue, x, y, boardValueArray, board))
+				if(isValidValue(tryValue, x, y, boardValueArray, board, boxMap))
 				{
 					boardValueArray[y][x] = tryValue;
 					eventListener.onResetBoardValue(board, tryValue, x, y);
@@ -82,7 +113,7 @@ public class LargeBruteForceSolver
 		eventListener.onBoardAllSolutionsComplete(board);
 	}
 
-	public void loadBoardData(Board board, int[][] values,
+	private void loadBoardData(Board board, int[][] values,
 		int[][] solvableSquares)
 	{
 		int i = 0;
@@ -108,43 +139,37 @@ public class LargeBruteForceSolver
 		solvableSquares[i] = null;
 	}
 
+	private Box[][] newBoxMap(Board board)
+	{
+		final Box[][] boxMap = new Box[board.dimension][board.dimension];
+		
+		final int boardDimension = board.dimension, boxWidth = board.boxWidth, boxHeight = board.boxHeight;
+		
+		for(int y = 0; y < boardDimension; y++)
+		{
+			for(int x = 0; x < boardDimension; x++)
+			{
+				boxMap[y][x] = new Box(x - (x % boxWidth), y - (y % board.boxHeight), boxWidth, boxHeight); 
+			}
+		}
+		
+		return boxMap;
+	}
+	
 	boolean isValidValue(int tryValue, int x, int y, int[][] boardValueArray,
-		Board board)
+		Board board, Box[][] boxMap)
 	{
 		assert tryValue != boardValueArray[y][x];
 
 		for(int i = 0; i < boardValueArray.length; i++)
 		{
-			if(boardValueArray[y][i] == tryValue)
+			if(	boardValueArray[y][i] == tryValue ||
+				boardValueArray[i][x] == tryValue)
 			{
 				return false;
 			}
 		}
-
-		for(int i = 0; i < boardValueArray.length; i++)
-		{
-			if(boardValueArray[i][x] == tryValue)
-			{
-				return false;
-			}
-		}
-
-		{
-			final int a = x - (x % board.boxWidth);
-			final int b = y - (y % board.boxHeight);
-
-			for(int i = b; i < b + board.boxHeight; i++)
-			{
-				for(int j = a; j < a + board.boxWidth; j++)
-				{
-					if(boardValueArray[i][j] == tryValue)
-					{
-						return false;
-					}
-				}
-			}
-		}
-
-		return true;
+		
+		return boxMap[y][x].isValidValue(tryValue, boardValueArray);
 	}
 }
