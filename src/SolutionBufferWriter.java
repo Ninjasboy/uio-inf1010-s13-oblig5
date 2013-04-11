@@ -9,30 +9,15 @@ import java.io.Writer;
 class SolutionBufferWriter
 {
 	/**
-	 * Writer to use.
-	 */
-	final private Writer writer;
-
-	/**
-	 * Creates a solution buffer writer that uses the specified writer object.
-	 * 
-	 * @param writer Writer to use.
-	 */
-	SolutionBufferWriter(Writer writer)
-	{
-		this.writer = writer;
-	}
-
-	/**
 	 * Writes a solution buffer.
 	 * 
 	 * @throws IOException An I/O error occurs during writing.
 	 */
-	public void write(SolutionBuffer solutionBuffer) throws IOException
+	public void write(SolutionBuffer solutionBuffer, Writer writer) throws IOException
 	{
 		for(int i = 0; i < solutionBuffer.size(); i++)
 		{
-			writeSolution(solutionBuffer, i);
+			writeSolution(solutionBuffer, i, writer);
 		}
 	}
 
@@ -43,7 +28,7 @@ class SolutionBufferWriter
 	 * @param index Index of the solution to use.
 	 * @throws IOException An I/O error occurs during writing.
 	 */
-	private void writeSolution(SolutionBuffer solutionBuffer, int index)
+	private void writeSolution(SolutionBuffer solutionBuffer, int index, Writer writer)
 			throws IOException
 	{
 		writer.write(Integer.toString(index + 1) + ": "); //$NON-NLS-1$
