@@ -1,5 +1,5 @@
 /**
- * A single row spanning the width of a Sudoku board.
+ * A single row of squares spanning the width of a Sudoku board.
  */
 class Row extends BoardFragment
 {

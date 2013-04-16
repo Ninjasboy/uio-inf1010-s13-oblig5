@@ -5,15 +5,14 @@ import java.io.Reader;
 /**
  * A board loader.
  * 
- * Objects of this class load a board object using a <code>Reader</code> as
- * input stream provider.
+ * Loads a board object using a <code>Reader</code> as input stream provider.
  */
 class BoardFileLoader
 {
 	/**
 	 * Represents a condition of invalid or suspicious input.
 	 */
-	public class InputFormatException extends RuntimeException
+	class InputFormatException extends RuntimeException
 	{
 		final private Reader reader;
 
@@ -31,30 +30,6 @@ class BoardFileLoader
 			this.reader = reader;
 		}
 	}
-	
-	/**
-	 * Obtain board element value given a character.
-	 * 
-	 * @param c Character to obtain the value of.
-	 * @return Value of the character provided.
-	 */
-	static int valueFromChar(char c)
-	{
-		if(c >= '1' && c <= '9')
-		{
-			return c - '0';
-		}
-		else if(c >= 'A' && c <= 'Z')
-		{
-			return (c - 'A') + 10;
-		}
-		else if(c == '@')
-		{
-			return 36;
-		}
-
-		throw new IllegalArgumentException("Invalid character supplied.");
-	}
 
 	/**
 	 * Load a board using a <code>Reader</code>.
@@ -65,11 +40,13 @@ class BoardFileLoader
 	 */
 	Board loadBoard(Reader input) throws IOException
 	{
-		final BufferedReader reader = (input instanceof BufferedReader) ? ((BufferedReader)input) : (new BufferedReader(input));
-		
+		final BufferedReader reader =
+			(input instanceof BufferedReader) ? ((BufferedReader)input)
+				: (new BufferedReader(input));
+
 		try
 		{
-			/** Parse header. */	
+			/** Parse header. */
 			final int dimension = Integer.parseInt(reader.readLine());
 			final int boxHeight = Integer.parseInt(reader.readLine());
 			final int boxWidth = Integer.parseInt(reader.readLine());
@@ -84,7 +61,7 @@ class BoardFileLoader
 				{
 					throw new InputFormatException("Line of input expected here.", reader);
 				}
-								
+
 				if(line.length() != dimension)
 				{
 					throw new InputFormatException("Wrong number of characters in input line.", reader);
@@ -95,7 +72,7 @@ class BoardFileLoader
 					final char c = line.charAt(x);
 
 					try
-					{						
+					{
 						boardData[y][x] = (c == '.') ? 0 : valueFromChar(c);
 					}
 					catch(IllegalArgumentException e)
@@ -113,4 +90,31 @@ class BoardFileLoader
 			reader.close();
 		}
 	}
+	
+	/**
+	 * Obtain board element value from a character.
+	 * 
+	 * Board characters are what is displayed in a Sudoku board, while values
+	 * are their numeric counterparts.
+	 * 
+	 * @param c Character to obtain the value of.
+	 * @return Value of the character provided.
+	 */
+	int valueFromChar(char c)
+	{
+		if(c >= '1' && c <= '9')
+		{
+			return c - '0';
+		}
+		else if(c >= 'A' && c <= 'Z')
+		{
+			return (c - 'A') + 10;
+		}
+		else if(c == '@')
+		{
+			return 36;
+		}
+
+		throw new IllegalArgumentException("Invalid character argument.");
+	}	
 }

@@ -10,19 +10,18 @@ import java.util.Map;
 import java.awt.Color;
 
 /**
- * Main application.
+ * Main application and the program entry point.
  * 
- * When no arguments are present, asks user to select a board file, loads a
- * board, and presents a Sudoku board view with the solutions, and navigation
+ * When no arguments are present, ask user to select a board file, load a board,
+ * solve it, and present a Sudoku board view with solutions and navigation
  * buttons.
  * 
- * When a single argument is present, loads the board from the file specified by
- * the argument.
+ * When a single argument is present, load the board from the file specified by
+ * command line and otherwise behave as in the case above.
  * 
- * When two arguments are present, loads the board from the file specified by
- * the first argument, solves it, and writes the solutions to the file specified
- * by the second argument.
- * 
+ * When two arguments are present, load the board from the file specified by the
+ * first command line argument, solve it, and write solutions to the file
+ * specified by the second command line argument.
  */
 class Application implements LargeBruteForceSolver.EventListener,
 	BoardFrame.EventListener
@@ -63,7 +62,7 @@ class Application implements LargeBruteForceSolver.EventListener,
 		final boolean timeSolver;
 
 		/**
-		 * State whether solving thread is suspended as part of user manually
+		 * Whether the solving thread is suspended as part of user manually
 		 * stepping through the solving thread progress.
 		 */
 		volatile boolean solverThreadSuspended;
@@ -144,7 +143,7 @@ class Application implements LargeBruteForceSolver.EventListener,
 
 			notifyAll();
 		}
-		
+
 		/**
 		 * Called by event listener methods during solving of the board.
 		 */
@@ -184,7 +183,7 @@ class Application implements LargeBruteForceSolver.EventListener,
 					throw new RuntimeException(e);
 				}
 			}
-		}		
+		}
 	}
 
 	/** Debugging support object */
@@ -220,10 +219,11 @@ class Application implements LargeBruteForceSolver.EventListener,
 	 * specified file instead of displaying them with a GUI.
 	 * 
 	 * @param args An array of command line arguments.
-	 * @throws IOException An I/O error occurs while loading the board from
-	 *         file.
+	 * 
 	 * @throws FileNotFoundException The file to load the board from was not
 	 *         found.
+	 * @throws IOException An I/O error occurs while loading the board from
+	 *         file.
 	 */
 	Application(String[] args) throws FileNotFoundException, IOException
 	{
@@ -248,9 +248,9 @@ class Application implements LargeBruteForceSolver.EventListener,
 	 * 
 	 * @param boardFile The file to load the board from.
 	 * 
-	 * @throws IOException An I/O error occurs while loading the board.
 	 * @throws FileNotFoundException The file to load the board from was not
 	 *         found.
+	 * @throws IOException An I/O error occurs while loading the board.
 	 */
 	public Board loadBoard(File boardFile)
 		throws FileNotFoundException, IOException
@@ -268,12 +268,12 @@ class Application implements LargeBruteForceSolver.EventListener,
 	}
 
 	/**
-	 * Initiates solving process by starting a solving thread which will
-	 * progress in parallel with the calling execution process.
+	 * Initiate solving process by starting a solving thread which will progress
+	 * in parallel with the calling execution process.
 	 * 
 	 * The application will be notified of events during solving process. In
-	 * IDE-unassisted debugging mode, the board view will be constructed and
-	 * updated during the solving process.
+	 * "interactive solving" debugging mode, the board view will be constructed
+	 * and updated during the solving process.
 	 * 
 	 * @param board The board to start solving.
 	 * @param boardFile The file that the board is loaded from, to use as board
@@ -297,7 +297,7 @@ class Application implements LargeBruteForceSolver.EventListener,
 			boardFrame.setVisible(true);
 		}
 
-		Thread solverThread = new Thread()
+		final Thread solverThread = new Thread()
 		{
 			@Override public void run()
 			{
@@ -324,18 +324,20 @@ class Application implements LargeBruteForceSolver.EventListener,
 	/**
 	 * Callback method.
 	 * 
-	 * Only used with IDE-unassisted debugging now. Is called when a value of a
-	 * square of a board is found to be invalid.
+	 * Is called when a value of a board square is about to be tested for
+	 * validity.
 	 * 
-	 * @param badValue The value that is found to be invalid.
-	 * @param square The board square that the value was tried for.
+	 * @param board The board that is being solved.
+	 * @param tryValue The value that is being tried for validity.
+	 * @param colIndex The index of the column of the value.
+	 * @param rowIdex The index of the row of the value..
 	 */
 	@Override public void onSolverTryBoardValue(Board board, int tryValue,
 		int colIndex, int rowIndex)
 	{
 		if(debug.interactiveSolving)
 		{
-			boardFrame.updateSquare(colIndex, rowIndex, tryValue, Color.YELLOW);
+			boardFrame.redrawSquare(colIndex, rowIndex, tryValue, Color.YELLOW);
 
 			debug.onStep();
 		}
@@ -344,18 +346,19 @@ class Application implements LargeBruteForceSolver.EventListener,
 	/**
 	 * Callback method.
 	 * 
-	 * Only used with IDE-unassisted debugging now. Is called when a value of a
-	 * square of a board is reset.
+	 * Is called when a board square value is reset.
 	 * 
-	 * @param square The board square that has had its value reset.
-	 * @throws InterruptedException
+	 * @param board The board that is being solved.
+	 * @param value The new value of the square.
+	 * @param colIndex The index of the column of the value.
+	 * @param rowIdex The index of the row of the value.
 	 */
 	@Override public void onResetBoardValue(Board board, int value,
 		int colIndex, int rowIndex)
 	{
 		if(debug.interactiveSolving)
 		{
-			boardFrame.updateSquare(colIndex, rowIndex, value, Color.GREEN);
+			boardFrame.redrawSquare(colIndex, rowIndex, value, Color.GREEN);
 
 			debug.onStep();
 		}
@@ -364,18 +367,19 @@ class Application implements LargeBruteForceSolver.EventListener,
 	/**
 	 * Callback method.
 	 * 
-	 * Only used with IDE-unassisted debugging now. Is called when a value of a
-	 * square of a board is found to be invalid.
+	 * Is called when a value of a board square is found to be invalid.
 	 * 
-	 * @param badValue The value that is found to be invalid.
-	 * @param square The board square that the value was tried for.
+	 * @param board The board that is being solved.
+	 * @param badValue The tried value that turned out to be invalid.
+	 * @param colIndex The index of the column of the value.
+	 * @param rowIdex The index of the row of the value.
 	 */
-	@Override public void onBoardSolvingBadValue(Board board, int tryValue,
+	@Override public void onBoardSolvingBadValue(Board board, int badValue,
 		int colIndex, int rowIndex)
 	{
 		if(debug.interactiveSolving)
 		{
-			boardFrame.updateSquare(colIndex, rowIndex, tryValue, Color.RED);
+			boardFrame.redrawSquare(colIndex, rowIndex, badValue, Color.RED);
 
 			debug.onStep();
 		}
@@ -386,7 +390,8 @@ class Application implements LargeBruteForceSolver.EventListener,
 	 * 
 	 * Is called when a single solution is found for a board.
 	 * 
-	 * @param board the board that has been solved.
+	 * @param board The board for which the solution has been found.
+	 * @param boardValueArray The array of values that comprises the solution.
 	 */
 	@Override public void onBoardSolutionComplete(Board board,
 		int[][] boardValueArray)
@@ -427,6 +432,11 @@ class Application implements LargeBruteForceSolver.EventListener,
 		}
 	}
 
+	/**
+	 * Callback method.
+	 * 
+	 * Is called when the step button is clicked.
+	 */
 	@Debug @Override public void onStepButtonClicked()
 	{
 		debug.resumeSolvingThread();
@@ -436,6 +446,8 @@ class Application implements LargeBruteForceSolver.EventListener,
 	 * Create a board frame. A board frame gives the user a view of the board.
 	 * 
 	 * @param board The data model for the new frame.
+	 * @param boardFile The file that the board was loaded from, to use as frame
+	 *        title.
 	 */
 	private BoardFrame newBoardFrame(Board board, File boardFile)
 	{
@@ -448,7 +460,7 @@ class Application implements LargeBruteForceSolver.EventListener,
 	 * @param title Title of the dialog
 	 * @param isSaveDialog Whether this dialog is for saving a file or loading
 	 *        it.
-	 * @return Selected file object.
+	 * @return Selected file object or <code>null</code> if dialog is aborted.
 	 */
 	private File chooseFileDialog(String title, boolean isSaveDialog)
 	{
@@ -458,18 +470,24 @@ class Application implements LargeBruteForceSolver.EventListener,
 	}
 
 	/**
-	 * Procedure to save the solution buffer to the solutions file or stdout.
+	 * Save solution buffer to a file or stdout.
 	 * 
-	 * The resource leak warning is a false positive - the <code>writer</code>
-	 * is always closed because it is enclosed in a <code>finally</code> block.
+	 * @param solutionBuffer The solution buffer to save.
+	 * @param outputFileSpec The path of the file to write to, or "-" to use
+	 *        standard output.
 	 * 
-	 * @throws IOException An I/O error occurs while writing solution buffer.
+	 * @throws IOException An I/O error occured while writing solution buffer.
 	 */
 	private void saveSolutions(SolutionBuffer solutionBuffer,
 		String outputFileSpec) throws IOException
 	{
 		assert outputFileSpec != null;
 
+		/**
+		 * The resource leak warning is a false positive - the
+		 * <code>writer</code> is always closed because it is enclosed in a
+		 * <code>finally</code> block. Otherwise, I don't have a clue :-)
+		 */
 		final Writer writer =
 			outputFileSpec.equals("-")
 				? (new OutputStreamWriter(System.out))
@@ -486,5 +504,5 @@ class Application implements LargeBruteForceSolver.EventListener,
 		{
 			writer.close();
 		}
-	}	
+	}
 }

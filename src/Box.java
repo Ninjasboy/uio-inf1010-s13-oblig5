@@ -1,10 +1,10 @@
 /**
- * A box of squares on a Sudoku board.
+ * A boxed group of squares on a Sudoku board.
  */
 class Box extends BoardFragment
 {
 	/**
-	 * Create a box with specified edges.
+	 * Create a box.
 	 * 
 	 * @param left Index of the leftmost column this box includes.
 	 * @param top Index of the topmost row this box includes.

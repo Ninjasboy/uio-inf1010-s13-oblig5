@@ -1,31 +1,8 @@
 /**
  * Model of a Sudoku board.
- * 
- * Includes an event listener, that is notified of changes in the model state.
- * 
- * Fra oppgaveteksten: "brett er alle n x n ruter."
- * 
- * @author armenmi
- * 
  */
 class Board
 {
-	/**
-	 * Event listener for board solving process.
-	 * 
-	 * Is notified under solving process of various relevant events.
-	 */
-	interface EventListener
-	{
-		void onBoardSolutionComplete(Board board);
-
-		void onBoardAllSolutionsComplete(Board board);
-
-		void onResetBoardSquareValue(DynamicSquare square);
-
-		void onSolvingBadSquareValue(int badValue, DynamicSquare square);
-	}
-
 	/**
 	 * Creates and returns a new board that has all its squares empty.
 	 * 
@@ -72,7 +49,7 @@ class Board
 				board.squares[y][x] =
 					(boardData[y][x] != 0)
 						? new StaticSquare(boardData[y][x], x, y, board)
-						: new DynamicSquare(x, y, board);						
+						: new DynamicSquare(x, y, board);
 			}
 		}
 
@@ -112,10 +89,10 @@ class Board
 	 */
 	private Board(int dimension, int boxWidth, int boxHeight)
 	{
-		/** Boxes must fit tightly into the board. */
+		/** Boxes must "fit" into the board. */
 		if((dimension % boxWidth) != 0 || (dimension % boxHeight) != 0)
 		{
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Board boxes do not fit nicely into the board.");
 		}
 
 		squares = new Square[dimension][dimension];
@@ -125,7 +102,7 @@ class Board
 		this.boxWidth = boxWidth;
 		this.boxHeight = boxHeight;
 
-		// / Create rows
+		/** Create rows. */
 
 		rows = new Row[dimension];
 
@@ -134,7 +111,7 @@ class Board
 			this.rows[y] = new Row(y, this);
 		}
 
-		// / Create columns
+		/** Create columns. */
 
 		cols = new Column[dimension];
 
@@ -143,7 +120,7 @@ class Board
 			this.cols[x] = new Column(x, this);
 		}
 
-		// / Create boxes
+		/** Create boxes. */
 
 		boxes = new Box[dimension / boxHeight][dimension / boxWidth];
 
@@ -168,76 +145,58 @@ class Board
 		return squares[rowIndex][colIndex];
 	}
 
+	/**
+	 * Obtain the row at specified index.
+	 * 
+	 * @param index Index of row to retrieve.
+	 * 
+	 * @return The row at specified index.
+	 */
 	public Column column(int index)
 	{
 		return cols[index];
 	}
 
+	/**
+	 * Obtain the row at specified index.
+	 * 
+	 * @param index Index of row to retrieve.
+	 * 
+	 * @return The row at specified index.
+	 */
 	public Row row(int index)
 	{
 		return rows[index];
 	}
 
+	/**
+	 * The box including specified column and row.
+	 * 
+	 * @param colIndex A column.
+	 * @param rowIndex A row.
+	 * 
+	 * @return The box including specified column and row.
+	 */
 	public Box box(int colIndex, int rowIndex)
 	{
 		return boxes[rowIndex / boxHeight][colIndex / boxWidth];
 	}
 
 	/**
-	 * Returns next (top-left to bottom-right direction) user-fillable square.
+	 * Obtain character value from board value.
 	 * 
-	 * @param square A square object to start from
-	 * @return Closest user-fillable square object.
-	 */
-	DynamicSquare nextDynamicSquare(Square square)
-	{
-		return firstDynamicSquare(square.column.index() + 1, square.row.index());
-	}
-
-	/**
-	 * Returns first empty square in the board. @see Board.nextDynamicSquare()
+	 * A character value matches what is displayed on the board. A board value
+	 * of 10 will f.e. match the character 'A' and so on.
 	 * 
-	 * @param colIndex Index of the column from which to start
-	 * @param rowIndex Index of the row from which to start
-	 * @return First dynamic (user-fillable) square to the right and/or bottom
-	 *         of specified column and row.
+	 * @param value The board value.
+	 * @return The character matching the specified value.
 	 */
-	DynamicSquare firstDynamicSquare(int colIndex, int rowIndex)
-	{
-
-		int x = colIndex;
-
-		for(int y = rowIndex; y < dimension; y++)
-		{
-			while(x < dimension)
-			{
-				if(
-				/* squares[y][x].value() == 0 */
-				squares[y][x] instanceof DynamicSquare)
-				{
-					return (DynamicSquare)squares[y][x];
-				}
-
-				x++;
-			}
-
-			x = 0;
-		}
-
-		return null;
-	}
-
-	/* Box box(int colIndex, int rowIndex) { return boxes[rowIndex / boxHeight *
-	 * (dimension / boxWidth) + colIndex / boxWidth]; } */
-
-	/* int value(int colIndex, int rowIndex) { return
-	 * squares[rowIndex][colIndex].value; } */
-
 	char charFromSquareValue(int value)
 	{
 		if(value < 1 || value > 36)
 		{
-			throw new IndexOutOfBoundsException("Value " + value + " out of range.");
+			throw new IndexOutOfBoundsException("Value " + value
+				+ " is out of range.");
 		}
 
 		return (value < 36) ? ((char)((value < 10) ? (value + 48)

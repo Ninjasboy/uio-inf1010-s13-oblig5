@@ -13,10 +13,18 @@ class BoardFragment
 	/**
 	 * Index of the column immediately succeeding rightmost column in this
 	 * fragment.
+	 * 
+	 * I.e. the column at the index specified by this variable is NOT included
+	 * in this fragment.
 	 */
 	final public int right;
 
-	/** Index of the row immediately succeeding bottommost row in this fragment. */
+	/**
+	 * Index of the row immediately succeeding bottommost row in this fragment.
+	 * 
+	 * I.e. the row at the index specified by this variable is NOT included
+	 * in this fragment.
+	 * */
 	final public int bottom;
 
 	/** The board that this fragment is part of. */

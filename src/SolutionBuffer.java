@@ -7,12 +7,16 @@ import java.util.List;
 class SolutionBuffer
 {
 	/**
-	 * Maximum amount of solutions a buffer will hold, before trimming.
+	 * Maximum amount of solutions a buffer will hold.
+	 * 
+	 * Adding a solution when the buffer is full causes causes removal of the
+	 * head element of solution list, effectively removing the oldest added
+	 * solution.
 	 */
 	private static final int MAX_LIST_SIZE = 500;
 
 	/**
-	 * The board the solutions apply to.
+	 * The board that the solutions apply to.
 	 */
 	public final Board board;
 
@@ -44,11 +48,11 @@ class SolutionBuffer
 	void addSnapshot(final int[][] boardValueArray)
 	{
 		assert noZeroValues(boardValueArray);
-		
+
 		if(size() == MAX_LIST_SIZE)
 		{
 			System.err
-					.println("Solution buffer has exceeded maximum allowed size, removing first element.");
+				.println("Solution buffer has exceeded maximum allowed size, removing first element.");
 
 			solutionList.remove(0);
 		}
@@ -78,9 +82,25 @@ class SolutionBuffer
 	{
 		return solutionList.size();
 	}
+
+	int[][] boardValueArrayCopy(final int[][] boardValueArray)
+	{
+		final int boardDimension = boardValueArray.length;
+
+		final int[][] boardValueArrayCopy =
+			new int[boardDimension][boardDimension];
+
+		for(int i = 0; i < boardDimension; i++)
+		{
+			System.arraycopy(boardValueArray[i], 0, boardValueArrayCopy[i], 0,
+				boardDimension);
+		}
+
+		return boardValueArrayCopy;
+	}
 	
-	boolean noZeroValues(int[][] a)
-	{		
+	@Debug private boolean noZeroValues(int[][] a)
+	{
 		for(int y = 0; y < a.length; y++)
 		{
 			for(int x = 0; x < a.length; x++)
@@ -91,21 +111,7 @@ class SolutionBuffer
 				}
 			}
 		}
-		
+
 		return true;
-	}
-	
-	int[][] boardValueArrayCopy(final int[][] boardValueArray)
-	{
-	    final int boardDimension = boardValueArray.length;
-	    
-	    final int[][] boardValueArrayCopy = new int[boardDimension][boardDimension];
-	    
-	    for(int i = 0; i < boardDimension; i++)
-	    {
-	        System.arraycopy(boardValueArray[i], 0, boardValueArrayCopy[i], 0, boardDimension);
-	    }
-	    
-	    return boardValueArrayCopy;
-	}
+	}	
 }

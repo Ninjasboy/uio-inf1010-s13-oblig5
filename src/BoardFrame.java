@@ -1,7 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
@@ -11,24 +10,31 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 /**
- * A view of a board, part of the GUI.
+ * A Swing frame that displays a Sudoku board.
  * 
  * Displays a board and navigates its solutions. The board acts a a model for
  * the frame.
  */
 class BoardFrame extends JFrame implements ActionListener
 {
+	/**
+	 * Event listener that is notified of events originating in and related to
+	 * this frame.
+	 */
 	interface EventListener
 	{
+		/**
+		 * Step button has been clicked. The step button is part of unassisted
+		 * debugging.
+		 */
 		void onStepButtonClicked();
 	}
-	
+
 	/** Size of the margin for the action buttons */
 	static final int BUTTONS_MARGIN_SIZE = 50;
 
@@ -51,8 +57,8 @@ class BoardFrame extends JFrame implements ActionListener
 	final private JTextField[][] squareTextFields;
 
 	/** Action buttons */
-	final JButton nextSolutionButton,
-		prevSolutionButton, stepButton/* , saveSolutionsButton */;
+	final JButton nextSolutionButton, prevSolutionButton,
+		stepButton/* , saveSolutionsButton */;
 
 	/** Currently displayed solution ID. */
 	private int solutionID;
@@ -60,17 +66,23 @@ class BoardFrame extends JFrame implements ActionListener
 	/** When board is being solved, this tracks last updated square view. */
 	private JTextField lastTextField;
 
-	private EventListener eventListener;
-	
 	/**
-	 * Creates a board frame that is linked to a board solution buffer.
+	 * The event listener object that is notified of events. See
+	 * <code>EventListener</code> class.
+	 */
+	private EventListener eventListener;
+
+	/**
+	 * Create a Swing frame that displays the board and its solutions.
 	 * 
-	 * References the parent GUI to call its methods when necessary (an
-	 * alternative to event propagation.)
+	 * The board and the solution buffer are used together.
 	 * 
-	 * @param solutionBuffer A solution buffer object that this frame will
+	 * @param board The Sudoku board model to display and navigate.
+	 * @param solutionBuffer The solution buffer object that this frame will
 	 *        display and navigate.
-	 * @param oblig3 A parent GUI to use for event propagation.
+	 * @param debug The object to use for debugging purposes.
+	 * @param eventListener The event listener to notify of events. See
+	 *        <code>EventListener</code> class.
 	 */
 	BoardFrame(Board board, SolutionBuffer solutionBuffer, String title,
 		Application.Debugger debug, EventListener eventListener)
@@ -80,7 +92,7 @@ class BoardFrame extends JFrame implements ActionListener
 		this.solutionBuffer = solutionBuffer;
 		this.debug = debug;
 		this.eventListener = eventListener;
-		
+
 		squareTextFields = new JTextField[board.dimension][board.dimension];
 
 		setPreferredSize(new Dimension(board.dimension * defaultSquareSize(), BUTTONS_MARGIN_SIZE
@@ -90,7 +102,7 @@ class BoardFrame extends JFrame implements ActionListener
 		setLayout(new BorderLayout());
 
 		final JPanel buttonsPanel = new JPanel();
-		
+
 		buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
 
 		final JPanel boardPanel = createBoardView();
@@ -103,12 +115,12 @@ class BoardFrame extends JFrame implements ActionListener
 		nextSolutionButton = addNewButton("Next solution", buttonsPanel);
 		prevSolutionButton = addNewButton("Previous solution", buttonsPanel);
 
-		stepButton = debug.useStepping ? addNewButton("Step", buttonsPanel) : null;
+		stepButton =
+			debug.useStepping ? addNewButton("Step", buttonsPanel) : null;
 	}
 
 	/**
-	 * Swing event callback method, is called when a <code>JButton</code> is
-	 * clicked.
+	 * Called by Swing framework when a <code>JButton</code> is clicked.
 	 */
 	@Override public void actionPerformed(ActionEvent event)
 	{
@@ -128,97 +140,13 @@ class BoardFrame extends JFrame implements ActionListener
 		}
 	}
 
-	public String squareText(int value)
-	{
-		return (value != 0) ? String.valueOf(board.charFromSquareValue(value))
-			: "";
-	}
-
 	/**
-	 * Updates the view with the solution specified by its ID.
+	 * Create a Swing panel that draws a traditional Sudoku board.
 	 * 
-	 * Also updates the title of the frame accordingly. Remembers the last
-	 * displayed solution by updating state of the frame.
-	 * 
-	 * @param solutionID An ID of the solution to retrieve from solution buffer.
-	 */
-	void showBoardSolution(int showSolutionID)
-	{
-		final int[][] boardValueArray = solutionBuffer.get(showSolutionID);
-
-		for(int y = 0; y < board.dimension; y++)
-		{
-			for(int x = 0; x < board.dimension; x++)
-			{
-				squareTextFields[y][x].setText(squareText(boardValueArray[y][x]));
-			}
-		}		
-
-		solutionID = showSolutionID;
-
-		final int solutionCount = solutionBuffer.size();
-
-		nextSolutionButton.setEnabled(solutionID + 1 < solutionCount);
-		prevSolutionButton.setEnabled(solutionID > 0);
-
-		setTitle(title + " " + (solutionID + 1) + "/" + solutionCount); //$NON-NLS-1$ //$NON-NLS-2$
-	}
-	
-	/**
-	 * Repaint square to indicate it is being 'solved' by the solving process.
-	 * 
-	 * This is part of IDE-unassisted debugging.
-	 * 
-	 * @param square The square whose view to update.
-	 */
-	void updateAsCurrentSquare(DynamicSquare square)
-	{
-		updateSquare(square, square.value, Color.YELLOW);
-	}
-
-	void updateCurrent(int x, int y, int value)
-	{
-		updateSquare(x, y, value, Color.YELLOW);
-	}
-
-	/**
-	 * Repaint a square with a given value and background color.
-	 * 
-	 * Tracks state by remembering last repainted square, and restores it to
-	 * default upon painting another square.
-	 * 
-	 * @param square Square to repaint.
-	 * @param value Value to display for the square (may differ from actual
-	 *        square value)
-	 * @param color Background color of the square.
-	 */
-	void updateSquare(DynamicSquare square, int value, Color color)
-	{
-		updateSquare(square.column.index(), square.row.index(), value, color);
-	}
-
-	void updateSquare(int x, int y, int value, Color color)
-	{
-		if(lastTextField != null)
-		{
-			lastTextField.setBackground(Color.WHITE);
-		}
-
-		JTextField textField = squareTextFields[y][x];
-
-		textField.setText(squareText(value)); //$NON-NLS-1$
-		textField.setBackground(color);
-
-		lastTextField = textField;
-	}
-
-	/**
-	 * Create the view of the board, with typical Sudoku visual style.
-	 * 
-	 * @return The <code>JPanel</code> object that has been created.
+	 * @return The newly created Swing panel.
 	 */
 	private JPanel createBoardView()
-	{		
+	{
 		final JPanel squareTextFieldsPanel = new JPanel();
 
 		squareTextFieldsPanel
@@ -231,7 +159,8 @@ class BoardFrame extends JFrame implements ActionListener
 
 		for(int y = 0; y < board.dimension; y++)
 		{
-			final int topBorderSize = (y % board.boxHeight == 0 && y != 0) ? 4 : 1;
+			final int topBorderSize =
+				(y % board.boxHeight == 0 && y != 0) ? 4 : 1;
 
 			for(int x = 0; x < board.dimension; x++)
 			{
@@ -263,13 +192,68 @@ class BoardFrame extends JFrame implements ActionListener
 
 		return squareTextFieldsPanel;
 	}
+	
+	/**
+	 * Update the view of a square using specified value and background color.
+	 * 
+	 * @param colIndex Index of the column of the square.
+	 * @param rowIndex Index of the row of the square.
+	 * @param value Value to redraw the view with.
+	 * @param color Background color to paint the view with.
+	 */
+	void redrawSquare(int colIndex, int rowIndex, int value, Color color)
+	{
+		if(lastTextField != null)
+		{
+			lastTextField.setBackground(Color.WHITE);
+		}
 
+		JTextField textField = squareTextFields[rowIndex][colIndex];
+
+		textField.setText(squareText(value)); //$NON-NLS-1$
+		textField.setBackground(color);
+
+		lastTextField = textField;
+	}
+	
+	/**
+	 * Display a solution specified by its ID.
+	 * 
+	 * Also updates the title of the frame accordingly. Remembers the last
+	 * displayed solution.
+	 * 
+	 * @param solutionID An ID of the solution to display.
+	 */
+	void showBoardSolution(int showSolutionID)
+	{
+		final int[][] boardValueArray = solutionBuffer.get(showSolutionID);
+
+		for(int y = 0; y < board.dimension; y++)
+		{
+			for(int x = 0; x < board.dimension; x++)
+			{
+				squareTextFields[y][x]
+					.setText(squareText(boardValueArray[y][x]));
+			}
+		}
+
+		solutionID = showSolutionID;
+
+		final int solutionCount = solutionBuffer.size();
+
+		nextSolutionButton.setEnabled(solutionID + 1 < solutionCount);
+		prevSolutionButton.setEnabled(solutionID > 0);
+
+		setTitle(title + " " + (solutionID + 1) + "/" + solutionCount); //$NON-NLS-1$ //$NON-NLS-2$
+	}
+	
 	/**
 	 * Add new action button.
 	 * 
 	 * @param label Label of the new button to create.
 	 * @param buttonsPanel Panel to attach the new button to.
-	 * @return Reference to the newly created button.
+	 * 
+	 * @return The newly created button.
 	 */
 	private JButton addNewButton(String label, JPanel buttonsPanel)
 	{
@@ -288,8 +272,20 @@ class BoardFrame extends JFrame implements ActionListener
 	 * 
 	 * @return Calculated size of the board square side.
 	 */
-	int defaultSquareSize()
+	private int defaultSquareSize()
 	{
 		return (board.dimension < 9) ? 75 : 50;
 	}
+	
+	/**
+	 * Obtain visual text string to display as square value.
+	 * 
+	 * @param value Value to display.
+	 * @return Text string to use as displayed text.
+	 */
+	private String squareText(int value)
+	{
+		return (value != 0) ? String.valueOf(board.charFromSquareValue(value))
+			: "";
+	}	
 }

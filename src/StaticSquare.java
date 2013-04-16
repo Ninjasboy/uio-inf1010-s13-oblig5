@@ -34,7 +34,7 @@ class StaticSquare extends Square
 	 * 
 	 * @return Value of this square.
 	 */
-	public int value()
+	int value()
 	{
 		return value;
 	}

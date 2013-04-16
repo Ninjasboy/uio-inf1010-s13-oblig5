@@ -1,12 +1,11 @@
-import com.sun.xml.internal.bind.annotation.OverrideAnnotationOf;
-
 /**
- * A user-fillable (solvable, dynamic) square element of a Sudoku board.
+ * A single user-fillable (solvable, "dynamic") square element of a Sudoku board.
  */
 class DynamicSquare extends Square
 {
+	/** Value of this square. */
 	int value;
-	
+
 	/**
 	 * Create a dynamic square that lies on specified column and row of a Sudoku
 	 * board.
@@ -21,20 +20,6 @@ class DynamicSquare extends Square
 	}
 
 	/**
-	 * Resets the value of this square to specified value and sends a
-	 * notification using the specified event listener object.
-	 * 
-	 * @param newValue New value of this square to set to.
-	 * @param eventListener The object to notify of value reset.
-	 */
-	private void setValue2(int newValue, Board.EventListener eventListener)
-	{
-		this.value = newValue;
-
-		eventListener.onResetBoardSquareValue(this);
-	}
-
-	/**
 	 * Check whether the specified value is a valid square value as far as
 	 * Sudoku rules are concerned. This naturally involves checking whether the
 	 * value is not duplicate across the row, column and the box that this
@@ -46,12 +31,16 @@ class DynamicSquare extends Square
 	 */
 	boolean isValidValue(int value)
 	{
-		return column.isValidValue(value) &&
-				row.isValidValue(value) &&
-				box.isValidValue(value);
+		return column.isValidValue(value) && row.isValidValue(value)
+			&& box.isValidValue(value);
 	}
-	
-	public int value()
+
+	/**
+	 * Obtain the value of this square.
+	 * 
+	 * @return Value of this square.
+	 */
+	@Override int value()
 	{
 		return value;
 	}

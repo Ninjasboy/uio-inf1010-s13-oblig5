@@ -1,10 +1,10 @@
 /**
- * A single column spanning the height of a Sudoku board.
+ * A single column of squares spanning the height of a Sudoku board.
  */
 class Column extends BoardFragment
 {
 	/**
-	 * Create a column with an index on a Sudoku board.
+	 * Create a column.
 	 * 
 	 * @param index Index of the column.
 	 * @param board Board that the column belongs to.

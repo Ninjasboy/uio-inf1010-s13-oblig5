@@ -1,5 +1,11 @@
 /**
  * Models a single square of a Sudoku board.
+ * 
+ * You may notice that this class lacks a <code>value</code> variable. This is
+ * because such value would be immutable for so-called static squares, and there
+ * is no way to override mutability in Java, so the value variable is included
+ * in subclasses of this class, with different mutability modifier. This way I
+ * can also statically guarantee that the value of a static square is immutable.
  */
 abstract class Square
 {
@@ -7,14 +13,17 @@ abstract class Square
 	 * Row this square lies on.
 	 */
 	final public Row row;
+
 	/**
 	 * Column this square lies on.
 	 */
 	final public Column column;
+
 	/**
 	 * Box this square lies in.
 	 */
 	final public Box box;
+
 	/**
 	 * Sudoku board this square lies in.
 	 */
@@ -31,9 +40,14 @@ abstract class Square
 	{
 		this.column = board.column(colIndex);
 		this.row = board.row(rowIndex);
-		this.box = board.box(colIndex, rowIndex);		
-		this.board = board;		
+		this.box = board.box(colIndex, rowIndex);
+		this.board = board;
 	}
-		
-	abstract public int value();	
+
+	/**
+	 * Obtain the value of this square.
+	 * 
+	 * @return The value of this square.
+	 */
+	abstract int value();
 }
