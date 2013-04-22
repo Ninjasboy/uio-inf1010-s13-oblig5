@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Map;
 import java.awt.Color;
 
 /**
@@ -40,8 +41,154 @@ class Application implements Board.EventListener, BoardFrame.EventListener
 			? args[1] : null);
 	}
 
-	/** IDE-unassisted debugging mode switch. */
-	final boolean debug = false;
+	/**
+	 * A debugging support object.
+	 */
+	@Debug class Debugger
+	{
+		/** Whether to monitor progress of solving visually in the board frame. */
+		final boolean interactiveSolving;
+
+		/** Whether to use manual stepping while solving the board. */
+		final boolean useStepping;
+
+		/**
+		 * Whether to delay interactive solving process on each square value
+		 * tried. Value of <code>-1</code> signifies that solving will not be
+		 * delayed.
+		 */
+		final int interactiveDelay;
+
+		/** Whether to time solving procedure. */
+		final boolean timeSolver;
+
+		/**
+		 * Whether the solving thread is suspended as part of user manually
+		 * stepping through the solving thread progress.
+		 */
+		volatile boolean solverThreadSuspended;
+
+		/**
+		 * Create new debugging object and initialize it using an environment
+		 * variable map.
+		 * 
+		 * @param env The environment variable map.
+		 */
+		Debugger(Map<String, String> env)
+		{
+			interactiveSolving = dbgEnvBoolean("debug.interactiveSolving", env);
+			useStepping =
+				dbgEnvBoolean("debug.interactiveSolving.useStepping", env);
+			interactiveDelay =
+				dbgEnvInteger("debug.interactiveSolving.delay", env);
+			timeSolver = dbgEnvBoolean("debug.timeSolver", env);
+		}
+
+		/**
+		 * Obtain boolean value from the verbatim value of an environment
+		 * variable.
+		 * 
+		 * @param varName Name of the variable to obtain value of.
+		 * @param env Environment variable map containing variables and their
+		 *        values.
+		 * @return Value of the variable.
+		 */
+		public boolean dbgEnvBoolean(String varName, Map<String, String> env)
+		{
+			return env.containsKey(varName) ? Boolean.parseBoolean(env
+				.get(varName)) : false;
+		}
+
+		/**
+		 * Obtain integer value from the verbatim value of an environment
+		 * variable.
+		 * 
+		 * @param varName Name of the variable to obtain value of.
+		 * @param env Environment variable map containing variables and their
+		 *        values.
+		 * @return Value of the variable.
+		 */
+		public int dbgEnvInteger(String varName, Map<String, String> env)
+		{
+			return env.containsKey(varName) ? Integer
+				.parseInt(env.get(varName)) : -1;
+		}
+
+		/**
+		 * Suspends the thread that is solving the board.
+		 * 
+		 * Part of the runtime debugging.
+		 * 
+		 * @throws InterruptedException If waiting for thread suspend release is
+		 *         interrupted.
+		 */
+		private synchronized void suspendSolvingThread()
+			throws InterruptedException
+		{
+			solverThreadSuspended = true;
+
+			while(solverThreadSuspended)
+			{
+				wait();
+			}
+		}
+
+		/**
+		 * Resumes the thread that is solving the board.
+		 * 
+		 * Useful with IDE-unassisted debugging.
+		 */
+		private synchronized void resumeSolvingThread()
+		{
+			solverThreadSuspended = false;
+
+			notifyAll();
+		}
+
+		/**
+		 * Called by event listener methods during solving of the board.
+		 */
+		private void onStep()
+		{
+			if(useStepping)
+			{
+				try
+				{
+					suspendSolvingThread();
+				}
+				catch(InterruptedException e)
+				{
+					/** Ignore interruption, but tell what happened. */
+					e.printStackTrace();
+				}
+			}
+			else
+			{
+				solveDelay();
+			}
+		}
+
+		/**
+		 * Encapsulates delaying of solving thread.
+		 */
+		private void solveDelay()
+		{
+			if(interactiveDelay >= 0)
+			{
+				try
+				{
+					Thread.sleep(interactiveDelay);
+				}
+				catch(InterruptedException e)
+				{
+					throw new RuntimeException(e);
+				}
+			}
+		}
+	}
+
+	/** Debugging support object */
+	final public Debugger debug;
 
 	/**
 	 * Whether to prefer AWT to Swing. AWT > Swing :-)
@@ -105,6 +252,8 @@ class Application implements Board.EventListener, BoardFrame.EventListener
 	Application(String boardFilePath, String solutionFileSpec)
 		throws FileNotFoundException, IOException
 	{
+		debug = new Debugger(System.getenv());
+		
 		this.solutionFileSpec = solutionFileSpec;
 
 		if(boardFilePath != null)
@@ -137,7 +286,7 @@ class Application implements Board.EventListener, BoardFrame.EventListener
 	 */
 	@Override public void onResetBoardSquareValue(DynamicSquare square)
 	{
-		if(debug)
+		if(debug.interactiveSolving)
 		{
 			boardFrame.updateAsCurrentSquare(square);
 
@@ -156,7 +305,7 @@ class Application implements Board.EventListener, BoardFrame.EventListener
 	 */
 	@Override public void onSolvingBadSquareValue(int badValue, DynamicSquare square)
 	{
-		if(debug)
+		if(debug.interactiveSolving)
 		{
 			boardFrame.updateSquare(square, badValue, Color.RED);
 			
@@ -231,14 +380,28 @@ class Application implements Board.EventListener, BoardFrame.EventListener
 		{
 			@Override public void run()
 			{
+				final long startSolvingTS = System.nanoTime();
+				
 				board.solve(Application.this);
+				
+				if(Application.this.debug.timeSolver)
+				{
+					System.err
+						.println("Solving took "
+							+ (int)((System.nanoTime() - startSolvingTS) / 1000 / 1000)
+							+ " milliseconds.");
+				}
 			}
 		};
 
-		if(debug)
+		if(debug.interactiveSolving)
 		{
 			createBoardFrame(board);
-			boardFrame.stepButton.setEnabled(true);
+			
+			if(debug.useStepping)
+			{
+				boardFrame.stepButton.setEnabled(true);
+			}
 		}
 
 		solverThread.start();

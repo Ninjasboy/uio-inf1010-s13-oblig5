@@ -33,7 +33,7 @@ class BoardFrame extends JFrame implements ActionListener
 	static final int BUTTONS_MARGIN_SIZE = 50;
 
 	/** Whether this frame is put into interactive debugging mode. */
-	final public boolean mode;
+	final public Application.Debugger debug;
 
 	/** The board displayed in this frame. */
 	final public Board board;
@@ -73,12 +73,12 @@ class BoardFrame extends JFrame implements ActionListener
 	 * @param oblig3 A parent GUI to use for event propagation.
 	 */
 	BoardFrame(Board board, SolutionBuffer solutionBuffer, String title,
-		boolean mode, EventListener eventListener)
+		Application.Debugger debug, EventListener eventListener)
 	{
 		this.title = title;
 		this.board = board;
 		this.solutionBuffer = solutionBuffer;
-		this.mode = mode;
+		this.debug = debug;
 		this.eventListener = eventListener;
 		
 		Font defaultFont = UIManager.getFont("TextField.font"); //$NON-NLS-1$
