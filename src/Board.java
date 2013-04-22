@@ -38,11 +38,13 @@ class Board
 	{
 		Board board = new Board(dimension, boxWidth, boxHeight);
 
+		DynamicSquare prevDynamicSquare = null;
+		
 		for(int y = 0; y < board.dimension; y++)
 		{
 			for(int x = 0; x < board.dimension; x++)
 			{
-				board.squares[y][x] = new DynamicSquare(x, y, board);
+				board.squares[y][x] = prevDynamicSquare = new DynamicSquare(x, y, board, prevDynamicSquare);
 			}
 		}
 
@@ -65,6 +67,8 @@ class Board
 	{
 		Board board = new Board(dimension, boxWidth, boxHeight);
 
+		DynamicSquare prevDynamicSquare = null;
+		
 		for(int y = 0; y < board.dimension; y++)
 		{
 			for(int x = 0; x < board.dimension; x++)
@@ -72,7 +76,7 @@ class Board
 				board.squares[y][x] =
 					(boardData[y][x] != 0)
 						? new StaticSquare(boardData[y][x], x, y, board)
-						: new DynamicSquare(x, y, board);						
+						: (prevDynamicSquare = new DynamicSquare(x, y, board, prevDynamicSquare));						
 			}
 		}
 

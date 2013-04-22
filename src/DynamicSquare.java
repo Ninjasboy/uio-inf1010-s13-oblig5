@@ -7,6 +7,8 @@ class DynamicSquare extends Square
 {
 	int value;
 	
+	DynamicSquare nextDynamicSquare;
+	
 	/**
 	 * Create a dynamic square that lies on specified column and row of a Sudoku
 	 * board.
@@ -15,9 +17,14 @@ class DynamicSquare extends Square
 	 * @param rowIndex Index of the row the square will lie on.
 	 * @param board The board that this square is part of.
 	 */
-	DynamicSquare(int colIndex, int rowIndex, Board board)
+	DynamicSquare(int colIndex, int rowIndex, Board board, DynamicSquare prevDynamicSquare)
 	{
 		super(colIndex, rowIndex, board);
+		
+		if(prevDynamicSquare != null)
+		{
+			prevDynamicSquare.nextDynamicSquare = this;
+		}
 	}
 
 	/**
@@ -41,8 +48,6 @@ class DynamicSquare extends Square
 			if(isValidValue(tryValue))
 			{
 				setValue(tryValue, eventListener);
-
-				DynamicSquare nextDynamicSquare = board.nextDynamicSquare(this);
 
 				if(nextDynamicSquare == null)
 				{
