@@ -1,5 +1,3 @@
-import com.sun.xml.internal.bind.annotation.OverrideAnnotationOf;
-
 /**
  * A user-fillable (solvable, dynamic) square element of a Sudoku board.
  */
